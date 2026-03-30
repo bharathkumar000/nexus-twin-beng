@@ -90,16 +90,33 @@ graph LR
 ---
 
 ## 🚀 GETTING STARTED
+
 > [!IMPORTANT]
-> Ensure **Node.js v18+** is installed before running the simulation engine.
+> Ensure **Node.js (v18+)** is installed on your local machine before proceeding.
 
+### 1. Clone the Simulation Architecture
 ```bash
-# 1. Initialize System
-npm install && cd client && npm install
+git clone https://github.com/bharathkumar000/smart-city-clone.git
+cd smart-city-clone
+```
 
-# 2. Launch Universal Interface
+### 2. Install Engine Dependencies
+Install the root and client-side dependencies to synchronize the P.I.S.E. framework:
+```bash
+# Install root dependencies
+npm install
+
+# Install client interface dependencies
+cd client && npm install
+```
+
+### 3. Launch Universal Interface
+Run the development server to initialize the 3D GIS Viewport:
+```bash
+# FROM THE ROOT DIRECTORY
 npm run dev
 ```
+- **🌐 Local Dashboard**: [http://localhost:5173](http://localhost:5173)
 
 ---
 
