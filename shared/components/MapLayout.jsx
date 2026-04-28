@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import maplibregl from 'maplibre-gl';
 import { DeckGL } from '@deck.gl/react';
+import { GeoJsonLayer } from '@deck.gl/layers';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 const MapLayout = ({ 
@@ -25,7 +26,6 @@ const MapLayout = ({
           'google-satellite': { type: 'raster', tiles: ['https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'], tileSize: 256 },
           'google-roads': { type: 'raster', tiles: ['https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}'], tileSize: 256 },
           'google-hybrid': { type: 'raster', tiles: ['https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'], tileSize: 256 },
-          'buildings': { type: 'geojson', data: '/data/bengaluru_buildings.json' },
           'infrastructure': { type: 'geojson', data: '/data/bengaluru_infrastructure.json' },
           'utilities': { type: 'geojson', data: '/data/bengaluru_utilities.json' }
         },
@@ -49,17 +49,6 @@ const MapLayout = ({
                 '#ffffff'],
               'line-opacity': 0 
             }
-          },
-          {
-            id: '3d-buildings',
-            type: 'fill-extrusion',
-            source: 'buildings',
-            paint: {
-              'fill-extrusion-color': '#f1f3f4',
-              'fill-extrusion-height': ['coalesce', ['get', 'height'], 15],
-              'fill-extrusion-base': 0,
-              'fill-extrusion-opacity': 0.9
-            }
           }
         ]
       },
@@ -71,6 +60,28 @@ const MapLayout = ({
 
     map.current.on('load', () => onMapLoad(map.current));
   }, []);
+
+  const buildingLayer = new GeoJsonLayer({
+    id: 'building-mesh-layer',
+    data: '/data/bengaluru_buildings.json',
+    extruded: true,
+    wireframe: true,
+    filled: true,
+    getElevation: d => d.properties.height || 15,
+    getFillColor: [255, 255, 255, 240],
+    getLineColor: [37, 99, 235, 120],
+    lineWidthMinPixels: 1,
+    pickable: true,
+    material: {
+      ambient: 0.4,
+      diffuse: 0.8,
+      shininess: 32,
+      specularColor: [255, 255, 255]
+    },
+    updateTriggers: {
+      getFillColor: [isXrayEnabled]
+    }
+  });
 
   useEffect(() => {
     if (!map.current) return;
@@ -89,7 +100,6 @@ const MapLayout = ({
       const targetLayer = isSat ? 'satellite-tiles' : (isHybrid ? 'hybrid-tiles' : 'street-tiles');
       if (map.current.getLayer(targetLayer)) map.current.setPaintProperty(targetLayer, 'raster-opacity', isXrayEnabled ? 0.15 : 1);
       if (map.current.getLayer('utility-pipes')) map.current.setPaintProperty('utility-pipes', 'line-opacity', isXrayEnabled ? 1 : 0);
-      if (map.current.getLayer('3d-buildings')) map.current.setPaintProperty('3d-buildings', 'fill-extrusion-opacity', isXrayEnabled ? 0.2 : 0.8);
     };
 
     if (map.current.isStyleLoaded()) {
@@ -108,7 +118,7 @@ const MapLayout = ({
         <DeckGL 
           viewState={viewState} 
           onWebGLInitialized={onWebGLInitialized}
-          layers={layers} 
+          layers={[buildingLayer, ...layers]} 
         />
       </div>
     </>

@@ -273,24 +273,30 @@ app.post('/api/predict-failures', (req, res) => {
 
 // Sentiment Analysis (X/News Data) Endpoint
 app.post('/api/sentiment', (req, res) => {
-  // Mock ward boundaries or just random points for heatmap
   const sentimentPoints = [];
-  const numPoints = 100;
+  const numPoints = 150;
 
   for (let i = 0; i < numPoints; i++) {
-    const sentiment = Math.random() * 2 - 1; // Range -1 (Complaints) to 1 (Satisfied)
+    const sentiment = Math.random() * 2 - 1; 
     sentimentPoints.push({
       id: i,
       coordinates: [
-        76.62 + Math.random() * 0.06,
-        12.28 + Math.random() * 0.05
+        77.55 + Math.random() * 0.1,
+        12.92 + Math.random() * 0.1
       ],
-      sentiment: sentiment, // -1 to 1
-      intensity: Math.random() // How many people are talking
+      sentiment: sentiment,
+      intensity: Math.random()
     });
   }
 
-  res.json({ points: sentimentPoints });
+  const mockFeed = [
+    { id: 1, user: "@namma_bengaluru", content: "Traffic at Silk Board is insane today! Need better flyover planning.", type: 'complaint', ward: 'BTM Layout' },
+    { id: 2, user: "@green_blr", content: "Love the new bio-reserve in Cubbon Park. The air feels fresher already.", type: 'praise', ward: 'Shivajinagar' },
+    { id: 3, user: "@techie_prakash", content: "Water shortage in Whitefield is getting critical. Any updates from the Command Center?", type: 'urgent', ward: 'Whitefield' },
+    { id: 4, user: "@citizen_voice", content: "Why are the street lights off on MG Road? Feels unsafe.", type: 'complaint', ward: 'Shanthala Nagar' }
+  ];
+
+  res.json({ points: sentimentPoints, feed: mockFeed });
 });
 
 // Real-time Notification System

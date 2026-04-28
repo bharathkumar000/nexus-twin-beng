@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   ShieldAlert, Activity, Bot, Hammer, Globe, MessageSquare, 
-  History, Target, Send, Megaphone, Loader2, Terminal, X, Heart, MapPin
+  History, Target, Send, Megaphone, Loader2, Terminal, X, Heart, MapPin, Trash2
 } from 'lucide-react';
 import { ASSET_TEMPLATES } from '../utils/constants';
 
@@ -38,7 +38,10 @@ const AdminSidebar = ({
   setSelectedRequest,
   mapRef,
   isSidebarCollapsed,
-  setIsSidebarCollapsed
+  setIsSidebarCollapsed,
+  isDemolishMode,
+  setIsDemolishMode,
+  sentimentData
 }) => {
   const handleAction = (callback) => {
     if (callback) callback();
@@ -180,17 +183,39 @@ const AdminSidebar = ({
                 imageRendering: 'pixelated',
                 boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
               }}>
-                <div style={{ 
-                  color: '#373737', 
-                  fontSize: '1rem', 
-                  fontWeight: 'bold', 
-                  marginBottom: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  textShadow: '1px 1px 0px rgba(255,255,255,0.8)'
-                }}>
-                  <Hammer size={18} /> INVENTORY
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <div style={{ 
+                    color: '#373737', 
+                    fontSize: '1rem', 
+                    fontWeight: 'bold', 
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    textShadow: '1px 1px 0px rgba(255,255,255,0.8)'
+                  }}>
+                    <Hammer size={18} /> INVENTORY
+                  </div>
+                  <button 
+                    onClick={() => setIsDemolishMode(!isDemolishMode)}
+                    style={{
+                      background: isDemolishMode ? '#ef4444' : '#C6C6C6',
+                      borderTop: isDemolishMode ? '2px solid #555555' : '2px solid #FFFFFF',
+                      borderLeft: isDemolishMode ? '2px solid #555555' : '2px solid #FFFFFF',
+                      borderBottom: isDemolishMode ? '2px solid #FFFFFF' : '2px solid #555555',
+                      borderRight: isDemolishMode ? '2px solid #FFFFFF' : '2px solid #555555',
+                      padding: '4px 10px',
+                      fontSize: '0.6rem',
+                      fontWeight: 'bold',
+                      color: isDemolishMode ? '#FFFFFF' : '#373737',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      cursor: 'pointer',
+                      fontFamily: '"Courier New", Courier, monospace'
+                    }}
+                  >
+                    <Trash2 size={12} /> {isDemolishMode ? 'DEMOLISH_ON' : 'DEMOLISH_OFF'}
+                  </button>
                 </div>
                 
                 {['Buildings', 'Transport', 'Energy'].map(groupName => {
@@ -330,6 +355,34 @@ const AdminSidebar = ({
                     {isSentimentLoading ? <Loader2 className="spin" size={16} /> : 'INITIALIZE HEATMAP'}
                   </button>
                 </div>
+
+                {sentimentData && sentimentData.feed && (
+                  <div className="social-feed" style={{ marginTop: '2rem' }}>
+                    <span className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)', marginBottom: '1rem' }}>
+                      <MessageSquare size={14} /> LIVE_CITIZEN_FEED
+                    </span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      {sentimentData.feed.map(post => (
+                        <div key={post.id} className="widget" style={{ padding: '1rem', background: 'rgba(255,255,255,0.6)', border: '1px solid var(--glass-border)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                            <span style={{ fontSize: '0.6rem', fontWeight: 900, color: 'var(--accent)' }}>{post.user}</span>
+                            <span style={{ fontSize: '0.5rem', color: 'var(--text-secondary)' }}>{post.ward.toUpperCase()}</span>
+                          </div>
+                          <p style={{ fontSize: '0.7rem', color: 'var(--text-primary)', lineHeight: '1.4' }}>{post.content}</p>
+                          <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div style={{ 
+                              width: '6px', 
+                              height: '6px', 
+                              borderRadius: '50%', 
+                              background: post.type === 'complaint' ? 'var(--danger)' : post.type === 'praise' ? 'var(--success)' : 'var(--warning)' 
+                            }} />
+                            <span style={{ fontSize: '0.5rem', fontWeight: 800, color: 'var(--text-secondary)' }}>{post.type.toUpperCase()}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}

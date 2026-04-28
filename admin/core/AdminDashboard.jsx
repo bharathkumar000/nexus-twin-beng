@@ -58,6 +58,7 @@ const AdminDashboard = () => {
   const [isSentimentLoading, setIsSentimentLoading] = useState(false);
   const [sentimentEnabled, setSentimentEnabled] = useState(false);
   const [sentimentData, setSentimentData] = useState(null);
+  const [isDemolishMode, setIsDemolishMode] = useState(false);
 
   const [viewState, setViewState] = useState({
     longitude: 77.5912, latitude: 12.9797, zoom: 14, pitch: 55, bearing: 0
@@ -110,7 +111,12 @@ const AdminDashboard = () => {
       getWidth: 1
     }),
     sentimentEnabled && sentimentData ? new HeatmapLayer({
-      id: 'sentiment-heatmap', data: sentimentData.points, getPosition: d => d.coordinates, radiusPixels: 70, opacity: 0.6
+      id: 'sentiment-heatmap', 
+      data: sentimentData.points, 
+      getPosition: d => d.coordinates, 
+      getWeight: d => d.sentiment + 1,
+      radiusPixels: 70, 
+      opacity: 0.6
     }) : null,
     new ColumnLayer({
       id: 'placed-assets-layer',
@@ -120,10 +126,12 @@ const AdminDashboard = () => {
       getElevation: d => d.height || 10,
       radius: d => d.radius || 20,
       extruded: true,
-      pickable: true,
+      pickable: isDemolishMode,
       elevationScale: 1,
       onClick: ({ object }) => {
-        if (object) setPlacedAssets(prev => prev.filter(p => p.id !== object.id));
+        if (isDemolishMode && object) {
+          setPlacedAssets(prev => prev.filter(p => p.id !== object.id));
+        }
       }
     }),
     new ScatterplotLayer({
@@ -224,13 +232,24 @@ const AdminDashboard = () => {
         onDragStart={onDragStart}
         floodLevel={floodLevel}
         setFloodLevel={setFloodLevel}
-        handleFetchSentiment={() => { setIsSentimentLoading(true); setTimeout(() => { setSentimentEnabled(true); setIsSentimentLoading(false); }, 1000); }}
+        handleFetchSentiment={async () => { 
+          setIsSentimentLoading(true); 
+          try {
+            const res = await axios.post('http://localhost:3001/api/sentiment');
+            setSentimentData(res.data);
+            setSentimentEnabled(true);
+          } catch (err) { console.error(err); }
+          setIsSentimentLoading(false); 
+        }}
         isSentimentLoading={isSentimentLoading}
         publicRequests={publicRequests}
         setSelectedRequest={setSelectedRequest}
         mapRef={mapRef}
         isSidebarCollapsed={isSidebarCollapsed}
         setIsSidebarCollapsed={setIsSidebarCollapsed}
+        isDemolishMode={isDemolishMode}
+        setIsDemolishMode={setIsDemolishMode}
+        sentimentData={sentimentData}
       />
 
       <AdminDock 
