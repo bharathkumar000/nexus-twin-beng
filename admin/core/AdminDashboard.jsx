@@ -195,6 +195,7 @@ const AdminDashboard = () => {
     <div className="app-root" onDragOver={e => e.preventDefault()} onDrop={onDrop}>
       <MapLayout 
         viewState={viewState} 
+        onViewStateChange={({ viewState }) => setViewState(viewState)}
         layers={layers} 
         currentStyle={currentStyle} 
         isXrayEnabled={isXrayEnabled}

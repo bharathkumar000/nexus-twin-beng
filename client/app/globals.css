@@ -50,7 +50,8 @@ body {
   overflow: hidden;
 }
 
-.side-panel:hover {
+.side-panel:hover,
+.side-panel.expanded {
   width: 440px;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(25px) saturate(180%);
@@ -73,7 +74,10 @@ body {
   transition: opacity 0.2s;
 }
 
-.side-panel:hover::before { opacity: 0; }
+.side-panel:hover::before,
+.side-panel.expanded::before { 
+  opacity: 0; 
+}
 
 .side-panel > * {
   opacity: 0;
@@ -82,7 +86,8 @@ body {
   pointer-events: none;
 }
 
-.side-panel:hover > * {
+.side-panel:hover > *,
+.side-panel.expanded > * {
   opacity: 1;
   transform: translateX(0);
   pointer-events: all;

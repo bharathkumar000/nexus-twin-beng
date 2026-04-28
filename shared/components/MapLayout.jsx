@@ -11,6 +11,7 @@ const MapLayout = ({
   isXrayEnabled, 
   onMapLoad, 
   onWebGLInitialized,
+  onViewStateChange,
   children 
 }) => {
   const mapContainer = useRef(null);
@@ -40,14 +41,15 @@ const MapLayout = ({
             type: 'line',
             source: 'utilities',
             paint: {
-              'line-width': 4,
+              'line-width': ['interpolate', ['linear'], ['zoom'], 12, 2, 18, 8],
               'line-color': ['match', ['get', 'type'], 
-                'WaterPipe', '#00bcd4', 
-                'ElectricityLine', '#ffffff', 
-                'GasLine', '#ff9800', 
-                'SewagePipe', '#8d6e63',
+                'WaterPipe', '#2563eb', 
+                'SewagePipe', '#facc15', 
+                'GasLine', '#f97316', 
+                'ElectricityLine', '#ffffff',
                 '#ffffff'],
-              'line-opacity': 0 
+              'line-opacity': 0,
+              'line-dasharray': [2, 1]
             }
           }
         ]
@@ -84,11 +86,9 @@ const MapLayout = ({
   });
 
   useEffect(() => {
-    if (!map.current) return;
+    if (!map.current || !map.current.isStyleLoaded()) return;
 
     const updateStyle = () => {
-      if (!map.current.isStyleLoaded()) return;
-
       const isSat = currentStyle === 'satellite';
       const isHybrid = currentStyle === 'hybrid';
       const isStreets = currentStyle === 'streets';
@@ -102,12 +102,19 @@ const MapLayout = ({
       if (map.current.getLayer('utility-pipes')) map.current.setPaintProperty('utility-pipes', 'line-opacity', isXrayEnabled ? 1 : 0);
     };
 
-    if (map.current.isStyleLoaded()) {
-      updateStyle();
-    } else {
-      map.current.once('styledata', updateStyle);
-    }
+    updateStyle();
   }, [currentStyle, isXrayEnabled]);
+
+  useEffect(() => {
+    if (map.current) {
+      map.current.jumpTo({
+        center: [viewState.longitude, viewState.latitude],
+        zoom: viewState.zoom,
+        pitch: viewState.pitch,
+        bearing: viewState.bearing
+      });
+    }
+  }, [viewState]);
 
   return (
     <>
@@ -117,6 +124,8 @@ const MapLayout = ({
       <div className="deck-overlay">
         <DeckGL 
           viewState={viewState} 
+          onViewStateChange={onViewStateChange}
+          controller={true}
           onWebGLInitialized={onWebGLInitialized}
           layers={[buildingLayer, ...layers]} 
         />
