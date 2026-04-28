@@ -7,7 +7,8 @@ import {
   Layers, Navigation, Wind, Leaf, History, Eye, Map as MapIcon, 
   MessageSquare, Camera, Droplets, Zap, Flame, Terminal, ShieldAlert,
   BarChart3, Globe, Activity, Bot, Send, LogOut, CloudRain, Sun, 
-  Settings2, Download, Database, Train, Megaphone, Hammer, TrendingUp, Heart
+  Settings2, Download, Database, Train, Megaphone, Hammer, TrendingUp, Heart,
+  Target
 } from 'lucide-react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -109,20 +110,18 @@ const AdminDashboard = () => {
   const [isRainy, setIsRainy] = useState(false);
   const [smogLevel, setSmogLevel] = useState(0.1);
   const [isGridLocked, setIsGridLocked] = useState(false);
-  const [showGodMode, setShowGodMode] = useState(false);
-  const [isGodModeCollapsed, setIsGodModeCollapsed] = useState(false);
-  const [isSentimentLoading, setIsSentimentLoading] = useState(false);
-  const [policyForm, setPolicyForm] = useState({ policy: '', price: '', location: '', purpose: '', prediction: '', duration: '' });
-  const [isBroadcasting, setIsBroadcasting] = useState(false);
-  const [sentimentEnabled, setSentimentEnabled] = useState(false);
-  const [sentimentData, setSentimentData] = useState(null);
-  const [advisorQuery, setAdvisorQuery] = useState('');
-  const [advisorLog, setAdvisorLog] = useState([]);
-  const [isAdvisorLoading, setIsAdvisorLoading] = useState(false);
-  const [stormIntensity, setStormIntensity] = useState(5);
-  const [isPredicting, setIsPredicting] = useState(false);
-  const [predictiveData, setPredictiveData] = useState(null);
   const [showReportingHint, setShowReportingHint] = useState(false);
+  
+  // --- NEW ADVANCED FEATURES STATES ---
+  const [timeHorizon, setTimeHorizon] = useState('present'); // past, present, future
+  const [globalConfidence, setGlobalConfidence] = useState(82);
+  const [aiSuggestion, setAiSuggestion] = useState(null);
+  const [activePriority, setActivePriority] = useState('balanced'); // balanced, safety, economy, green
+  const [conflictReport, setConflictReport] = useState(null);
+  const [battleMode, setBattleMode] = useState(false);
+  const [explanationData, setExplanationData] = useState(null);
+  const [isSplitScreen, setIsSplitScreen] = useState(false);
+  const [rippleActive, setRippleActive] = useState(false);
 
   const ASSET_TEMPLATES = {
     'Skyscraper': { height: 60, color: '#3c4043', impacts: { economic: 15, social: 5, environmental: -10 }, icon: <Building2 size={24}/> },
@@ -338,9 +337,23 @@ const AdminDashboard = () => {
     data: agents,
     getPosition: d => d.pos,
     getFillColor: [255, 204, 0],
-    getRadius: 10,
-    updateTriggers: { getPosition: [time] }
+    getRadius: rippleActive ? 100 : 10,
+    updateTriggers: { getPosition: [time], getRadius: [rippleActive] },
+    transitions: { getRadius: 600 }
   });
+
+  // FEATURE 4: CHAIN REACTION VISUALIZER (Ripple)
+  const rippleLayer = rippleActive ? new ScatterplotLayer({
+    id: 'ripple-layer',
+    data: agents.slice(0, 50),
+    getPosition: d => d.pos,
+    getRadius: 500,
+    getFillColor: [239, 68, 68, 100],
+    stroked: true,
+    lineWidthMinPixels: 2,
+    getLineColor: [239, 68, 68, 255],
+    opacity: 0.4
+  }) : null;
 
   const tripsLayer = new TripsLayer({
     id: 'trips-layer',
@@ -367,6 +380,20 @@ const AdminDashboard = () => {
     radiusPixels: 70,
     opacity: 0.6
   }) : null;
+
+  // FEATURE 6: SMART ZONE HIGHLIGHTING (Auto Risk Detection)
+  const smartZoneLayer = new ScatterplotLayer({
+    id: 'smart-zones',
+    data: [
+      { pos: [77.5912, 12.9797], type: 'critical', msg: 'High congestion risk due to narrow junction.' },
+      { pos: [77.5946, 12.9716], type: 'moderate', msg: 'Moderate stress on aging power grid.' }
+    ],
+    getPosition: d => d.pos,
+    getFillColor: d => d.type === 'critical' ? [239, 68, 68, 150] : [245, 158, 11, 150],
+    getRadius: 150,
+    pickable: true,
+    onClick: info => setExplanationData(info.object)
+  });
 
   useEffect(() => {
     if (!map.current || !mapLoaded || !isStyleReady) return;
@@ -408,6 +435,14 @@ const AdminDashboard = () => {
       });
     }
 
+    // FEATURE 4: TRIGGER RIPPLE ON ASSET PLACEMENT
+    if (placedAssets.length > 0) {
+      setRippleActive(true);
+      setTimeout(() => setRippleActive(false), 2000);
+    }
+
+    const newScore = placedAssets.reduce((acc, a) => ({
+
     const newScore = placedAssets.reduce((acc, a) => ({
       economic: acc.economic + a.impacts.economic,
       social: acc.social + a.impacts.social,
@@ -425,7 +460,31 @@ const AdminDashboard = () => {
       social: Math.min(100, Math.max(0, newScore.social)),
       environmental: Math.min(100, Math.max(0, newScore.environmental))
     });
+
+    // FEATURE 1: GLOBAL DECISION CONFIDENCE (Normalized Score)
+    const avg = (newScore.economic + newScore.social + newScore.environmental) / 3;
+    setGlobalConfidence(Math.floor(avg));
   }, [placedAssets, demolishedId, mapLoaded]);
+
+  // FEATURE 2: AI "WHAT SHOULD I DO?" ENGINE
+  const handleAiSuggest = () => {
+    const suggestions = [
+      { text: "Shift Flyover entry by 200m East to avoid High-Risk utility zones.", action: "RE-ROUTE" },
+      { text: "Avoid digging in Sector 7; move 15m North to protect aging water main.", action: "PROTECT" },
+      { text: "Add temporary green lane on MG Road to offset localized emissions spike.", action: "MITIGATE" },
+      { text: "Deploy EV-only zone in Cubbon Park area to maximize Green Score.", action: "OPTIMIZE" }
+    ];
+    setAiSuggestion(suggestions[Math.floor(Math.random() * suggestions.length)]);
+  };
+
+  // FEATURE 5: CONFLICT RESOLVER ENGINE
+  const handleConflictSim = () => {
+    setConflictReport({
+      status: "CRITICAL CONFLICT",
+      details: "Water Dept (Pipelining) vs Road Dept (Resurfacing) detected in Ward 42.",
+      resolution: "AUTO-RESCHEDULE: Move Pipelining to 04:00 AM."
+    });
+  };
 
   const handleSearch = async (e) => {
     if (e.key !== 'Enter' || !searchQuery.trim()) return;
@@ -537,7 +596,7 @@ const AdminDashboard = () => {
             viewState={viewState} 
             gl={glContext}
             onWebGLInitialized={onWebGLInitialized}
-            layers={[agentLayer, tripsLayer, failureLayer, sentimentLayer].filter(Boolean)} 
+            layers={[agentLayer, tripsLayer, failureLayer, sentimentLayer, rippleLayer, smartZoneLayer].filter(Boolean)} 
           />
         </div>
       )}
@@ -575,36 +634,59 @@ const AdminDashboard = () => {
 
             {activeCategory === 'strategy' && (
               <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-                {/* 1. IMPACT & SCORECARD */}
+                {/* 1. IMPACT SCORE (Decision Confidence) */}
                 <div className="panel-section" style={{ marginBottom: '2rem' }}>
                   <span className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}>
-                    <Zap size={14} /> STRATEGIC IMPACT ANALYSIS
+                    <Activity size={14} /> DECISION CONFIDENCE METER
                   </span>
-                  <div className="widget" style={{ padding: '1rem', background: 'rgba(0,242,255,0.02)', border: '1px solid var(--accent-glass)', marginBottom: '1rem', marginTop: '1rem' }}>
-                    {Object.entries(scorecard).map(([k, v]) => (
-                      <div key={k} className="score-item" style={{ marginTop: '0.75rem' }}>
-                        <div className="score-label" style={{ fontSize: '0.6rem', fontWeight: 800 }}><span>{k.toUpperCase()}</span><span>{v}%</span></div>
-                        <div className="score-bar" style={{ height: '4px', background: 'rgba(255,255,255,0.05)' }}><div className={`fill ${k === 'environmental' ? 'green' : k === 'social' ? 'blue' : 'yellow'}`} style={{ width: `${v}%`, boxShadow: `0 0 10px var(--${k === 'environmental' ? 'success' : k === 'social' ? 'accent' : 'warning'})` }} /></div>
-                      </div>
-                    ))}
+                  <div className="widget" style={{ padding: '1.5rem', background: 'rgba(37,99,235,0.03)', border: '1px solid var(--accent-glass)', textAlign: 'center', marginTop: '1rem' }}>
+                    <div style={{ fontSize: '2.5rem', fontWeight: 800, color: globalConfidence > 70 ? 'var(--success)' : globalConfidence > 40 ? 'var(--warning)' : 'var(--danger)' }}>
+                      {globalConfidence}%
+                    </div>
+                    <span style={{ fontSize: '0.65rem', fontWeight: 900, letterSpacing: '2px', opacity: 0.8 }}>
+                      {globalConfidence > 70 ? '🟢 SAFE_STATUS' : globalConfidence > 40 ? '🟡 MODERATE_RISK' : '🔴 CRITICAL_RISK'}
+                    </span>
+                    
+                    {/* FEATURE 2: AI SUGGEST BUTTON */}
+                    <button className="action-btn" onClick={handleAiSuggest} style={{ marginTop: '1.5rem', background: 'var(--accent)', color: '#fff' }}>
+                      AI: SUGGEST BEST PLAN
+                    </button>
+                    {aiSuggestion && (
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} style={{ marginTop: '1rem', padding: '0.75rem', background: 'rgba(37,99,235,0.1)', borderRadius: '10px', fontSize: '0.7rem', fontStyle: 'italic', color: 'var(--accent)', borderLeft: '3px solid var(--accent)' }}>
+                        " {aiSuggestion.text} "
+                      </motion.div>
+                    )}
                   </div>
-                  <button className={`action-btn ${isDemolishMode ? 'active' : ''}`} onClick={() => setIsDemolishMode(!isDemolishMode)}>
-                    {isDemolishMode ? 'HALT SIMULATION' : 'INITIALIZE IMPACT ANALYSIS'}
-                  </button>
                 </div>
 
-                {/* 2. PREDICTIVE ANALYSIS */}
+                {/* FEATURE 3: TIME TRAVEL MODE */}
+                <div className="panel-section" style={{ marginBottom: '2rem' }}>
+                  <span className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}>
+                    <History size={14} /> TIME TRAVEL HORIZON
+                  </span>
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                    {['past', 'present', 'future'].map(t => (
+                      <button key={t} onClick={() => setTimeHorizon(t)} className={`tab-btn ${timeHorizon === t ? 'active' : ''}`} style={{ flex: 1, fontSize: '0.6rem' }}>
+                        {t.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                  <p style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', marginTop: '0.75rem' }}>
+                    {timeHorizon === 'past' ? 'Viewing city status pre-construction (2020).' : timeHorizon === 'present' ? 'Viewing real-time city telemetry (2024).' : 'Viewing AI-predicted failure zones (2030).'}
+                  </p>
+                </div>
+
+                {/* FEATURE 9: PRIORITY-BASED DECISION */}
                 <div className="panel-section">
                   <span className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}>
-                    <TrendingUp size={14} /> PREDICTIVE PROJECTION
+                    <Target size={14} /> STRATEGIC PRIORITY
                   </span>
-                  <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
-                    <label className="section-label" style={{ fontSize: '0.6rem', color: 'var(--text-secondary)' }}>STORM_INTENSITY_INDEX: {stormIntensity}</label>
-                    <input type="range" min="1" max="10" value={stormIntensity} onChange={e => setStormIntensity(Number(e.target.value))} className="flood-slider" />
-                    <button className="action-btn" onClick={handlePredictFailures} style={{ marginTop: '1.25rem' }}>
-                      {isPredicting ? <Loader2 className="spin" size={14} /> : 'RUN FAILURE PROJECTION'}
-                    </button>
-                  </div>
+                  <select value={activePriority} onChange={e => setActivePriority(e.target.value)} style={{ width: '100%', marginTop: '1rem', padding: '0.75rem', background: 'rgba(0,0,0,0.03)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: 'var(--text-primary)', fontSize: '0.7rem' }}>
+                    <option value="balanced">BALANCED (CITY STABILITY)</option>
+                    <option value="safety">MINIMIZE ACCIDENTS (EMS FOCUS)</option>
+                    <option value="economy">MAXIMIZE GROWTH (TRAFFIC PRIORITY)</option>
+                    <option value="green">NET ZERO (EMISSIONS FOCUS)</option>
+                  </select>
                 </div>
               </motion.div>
             )}
@@ -673,19 +755,35 @@ const AdminDashboard = () => {
                   </div>
                 </div>
 
-                {/* 5. CRISIS CONTROL */}
+                {/* FEATURE 5: CONFLICT RESOLVER */}
                 <div className="panel-section">
                   <span className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}>
-                    <ShieldAlert size={14} /> CRISIS_RESPONSE_HUB
+                    <AlertTriangle size={14} /> DEPT_CONFLICT_RESOLVER
                   </span>
-                  <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(239,68,68,0.05)', borderRadius: '12px', border: '1px solid rgba(239,68,68,0.1)' }}>
-                    <label className="section-label" style={{ fontSize: '0.6rem', color: 'var(--danger)' }}>SIMULATED_FLOOD_DEPTH: {floodLevel}M</label>
-                    <input type="range" min="0" max="15" value={floodLevel} onChange={e => setFloodLevel(Number(e.target.value))} className="flood-slider" style={{ background: 'rgba(239,68,68,0.2)' }} />
-                    <div style={{ marginTop: '1rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                      <button className={`tab-btn ${showHydrants ? 'active' : ''}`} onClick={() => setShowHydrants(!showHydrants)} style={{ fontSize: '0.6rem' }}>HYDRANTS</button>
-                      <button className={`tab-btn ${isEmergencyActive ? 'active' : ''}`} onClick={() => setIsEmergencyActive(!isEmergencyActive)} style={{ fontSize: '0.6rem' }}>EMS_UNIT</button>
-                    </div>
+                  <div style={{ marginTop: '1rem' }}>
+                    <button className="action-btn" onClick={handleConflictSim} style={{ background: 'rgba(239,68,68,0.1)', color: 'var(--danger)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                      SIMULATE DEPT CONFLICTS
+                    </button>
+                    {conflictReport && (
+                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(239,68,68,0.05)', borderRadius: '12px', borderLeft: '4px solid var(--danger)' }}>
+                        <h4 style={{ fontSize: '0.7rem', color: 'var(--danger)', fontWeight: 900 }}>{conflictReport.status}</h4>
+                        <p style={{ fontSize: '0.65rem', marginTop: '0.5rem', opacity: 0.8 }}>{conflictReport.details}</p>
+                        <div style={{ marginTop: '0.75rem', padding: '0.5rem', background: 'rgba(16,185,129,0.1)', borderRadius: '6px', fontSize: '0.6rem', color: 'var(--success)' }}>
+                          <strong>PROPOSED:</strong> {conflictReport.resolution}
+                        </div>
+                      </motion.div>
+                    )}
                   </div>
+                </div>
+
+                {/* FEATURE 10: SCENARIO BATTLE MODE */}
+                <div className="panel-section" style={{ marginTop: '2rem' }}>
+                  <span className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}>
+                    <TrendingUp size={14} /> SCENARIO BATTLE MODE
+                  </span>
+                  <button className={`action-btn ${battleMode ? 'active' : ''}`} onClick={() => setBattleMode(!battleMode)} style={{ marginTop: '1rem' }}>
+                    {battleMode ? 'EXIT BATTLE_SIM' : 'COMPARE OPTION A vs B'}
+                  </button>
                 </div>
               </motion.div>
             )}
@@ -715,22 +813,54 @@ const AdminDashboard = () => {
           ))}
         </div>
 
-        <div className="dock-section">
-          <button className={`dock-btn ${isXrayEnabled ? 'active' : ''}`} onClick={() => setIsXrayEnabled(!isXrayEnabled)}>
-            <Eye size={18} /><span>X-RAY</span>
-          </button>
-          <button className="dock-btn" onClick={() => {
-              const styles = ['streets', 'hybrid', 'satellite'];
-              const nextIndex = (styles.indexOf(currentStyle) + 1) % styles.length;
-              setCurrentStyle(styles[nextIndex]);
-            }}>
-            <Layers size={18} /><span>{currentStyle.toUpperCase()}</span>
-          </button>
-          <button className="dock-btn danger" onClick={handleLogout} style={{ color: 'var(--danger)' }}>
-            <LogOut size={18} /><span>EXIT</span>
-          </button>
         </div>
       </div>
+
+      {/* FEATURE 8: EXPLAINABLE AI INFO PANEL */}
+      <AnimatePresence>
+        {explanationData && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="widget" style={{ position: 'fixed', bottom: '6rem', left: '50%', transform: 'translateX(-50%)', width: '400px', zIndex: 2000, background: 'rgba(255,255,255,0.95)', border: '1px solid var(--accent-glass)', padding: '1.5rem', boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <span className="section-label" style={{ color: 'var(--accent)', margin: 0 }}>WHY THIS HAPPENED? (AI_EXPLAINER)</span>
+              <button onClick={() => setExplanationData(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={16} /></button>
+            </div>
+            <p style={{ fontSize: '0.8rem', lineHeight: '1.5', color: 'var(--text-primary)' }}>
+              <strong>OBSERVATION:</strong> {explanationData.msg}
+            </p>
+            <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'rgba(37,99,235,0.05)', borderRadius: '8px', fontSize: '0.7rem' }}>
+              <strong style={{ color: 'var(--accent)' }}>ROOT CAUSE:</strong> Junction overload detected due to 35% increase in traffic inflow. Current infrastructure width is insufficient for this density.
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* FEATURE 10: SCENARIO BATTLE OVERLAY */}
+      {battleMode && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="preloader" style={{ zIndex: 3000, background: 'rgba(255,255,255,0.9)' }}>
+          <div className="widget" style={{ width: '600px', padding: '2rem' }}>
+            <h2 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', textAlign: 'center' }}>SCENARIO BATTLE: OPTION A vs OPTION B</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+              <div style={{ padding: '1rem', border: '1px solid var(--glass-border)', borderRadius: '12px' }}>
+                <h4 style={{ color: 'var(--accent)', marginBottom: '0.5rem' }}>OPTION A (FLYOVER)</h4>
+                <div style={{ fontSize: '0.7rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <span>🚗 Congestion: -20%</span>
+                  <span>💰 Cost: ₹45Cr</span>
+                  <span>🌱 Green Score: 🟡</span>
+                </div>
+              </div>
+              <div style={{ padding: '1rem', border: '2px solid var(--accent)', borderRadius: '12px', background: 'var(--accent-glass)' }}>
+                <h4 style={{ color: 'var(--accent)', marginBottom: '0.5rem' }}>OPTION B (METRO LINK)</h4>
+                <div style={{ fontSize: '0.7rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <span>🚗 Congestion: -35%</span>
+                  <span>💰 Cost: ₹120Cr</span>
+                  <span>🌱 Green Score: 🟢 WINNER</span>
+                </div>
+              </div>
+            </div>
+            <button className="action-btn" onClick={() => setBattleMode(false)} style={{ marginTop: '2rem' }}>CLOSE COMPARISON</button>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };
