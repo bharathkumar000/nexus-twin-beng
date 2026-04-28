@@ -203,7 +203,8 @@ const AdminSidebar = ({
                       }}>
                         {assets.map(([name, asset]) => {
                           const isActive = assetToPlace === name;
-                                                      <div 
+                          return (
+                            <div 
                               key={name} 
                               draggable 
                               onDragStart={(e) => onDragStart(e, name)} 
@@ -258,7 +259,6 @@ const AdminSidebar = ({
                                 {name.split('-')[0].toUpperCase()}
                               </span>
                             </div>
-  </div>
                           );
                         })}
                         {Array.from({ length: emptySlots }).map((_, i) => (
