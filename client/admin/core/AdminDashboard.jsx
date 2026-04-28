@@ -7,9 +7,9 @@ import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 import { TripsLayer } from '@deck.gl/geo-layers';
 
 // SHARED
-import MapLayout from '../shared/components/MapLayout';
-import { updateAgents } from '../shared/utils/simulation';
-import { generateAgents } from '../shared/utils/agentGenerator';
+import MapLayout from '../../shared/components/MapLayout';
+import { updateAgents } from '../../shared/utils/simulation';
+import { generateAgents } from '../../shared/utils/agentGenerator';
 
 // ADMIN SPECIFIC
 import AdminSidebar from '../components/AdminSidebar';
