@@ -1,7 +1,7 @@
 import React from 'react';
 import { Globe, Leaf, ShieldAlert, History, Layers, LogOut } from 'lucide-react';
 
-const UserDock = ({ activeTab, setActiveTab, currentStyle, setCurrentStyle, handleLogout }) => {
+const UserDock = ({ activeTab, setActiveTab, currentStyle, setCurrentStyle, handleLogout, setIsSidebarCollapsed }) => {
   const tabs = [
     { id: 'social', icon: Globe, label: 'Mood' },
     { id: 'eco', icon: Leaf, label: 'Eco' },
@@ -13,7 +13,10 @@ const UserDock = ({ activeTab, setActiveTab, currentStyle, setCurrentStyle, hand
     <div className="bottom-dock">
       <div className="dock-section">
         {tabs.map(t => (
-          <button key={t.id} className={`dock-btn ${activeTab === t.id ? 'active' : ''}`} onClick={() => setActiveTab(t.id)}>
+          <button key={t.id} className={`dock-btn ${activeTab === t.id ? 'active' : ''}`} onClick={() => {
+            setActiveTab(t.id);
+            setIsSidebarCollapsed(false);
+          }}>
             <t.icon size={18} />
             <span>{t.label}</span>
           </button>

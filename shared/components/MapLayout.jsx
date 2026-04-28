@@ -43,7 +43,7 @@ const MapLayout = ({
               'line-width': 4,
               'line-color': ['match', ['get', 'type'], 
                 'WaterPipe', '#00bcd4', 
-                'ElectricityLine', '#ffeb3b', 
+                'ElectricityLine', '#ffffff', 
                 'GasLine', '#ff9800', 
                 'SewagePipe', '#8d6e63',
                 '#ffffff'],

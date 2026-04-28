@@ -42,6 +42,7 @@ const UserDashboard = () => {
   const [showNotifBar, setShowNotifBar] = useState(false);
   const [latestNotif, setLatestNotif] = useState(null);
   const [publicRequests, setPublicRequests] = useState([]);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
 
   const [viewState, setViewState] = useState({
     longitude: 77.5912, latitude: 12.9797, zoom: 14, pitch: 55, bearing: 0
@@ -89,9 +90,6 @@ const UserDashboard = () => {
   }, [isRainy]);
 
   const layers = [
-    new ScatterplotLayer({
-      id: 'agent-layer', data: agents, getPosition: d => d.pos, getFillColor: [255, 204, 0], getRadius: 10, updateTriggers: { getPosition: [time] }
-    }),
     sentimentEnabled && sentimentData ? new HeatmapLayer({
       id: 'sentiment-heatmap', data: sentimentData.points, getPosition: d => d.coordinates, radiusPixels: 70, opacity: 0.6
     }) : null,
@@ -144,12 +142,15 @@ const UserDashboard = () => {
         floodLevel={floodLevel} setFloodLevel={setFloodLevel}
         isRainy={isRainy} setIsRainy={setIsRainy}
         timelineYear={timelineYear} setTimelineYear={setTimelineYear}
+        isSidebarCollapsed={isSidebarCollapsed}
+        setIsSidebarCollapsed={setIsSidebarCollapsed}
       />
 
       <UserDock 
         activeTab={activeTab} setActiveTab={setActiveTab}
         currentStyle={currentStyle} setCurrentStyle={setCurrentStyle}
         handleLogout={handleLogout}
+        setIsSidebarCollapsed={setIsSidebarCollapsed}
       />
     </div>
   );

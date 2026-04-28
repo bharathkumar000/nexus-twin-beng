@@ -14,10 +14,12 @@ const UserSidebar = ({
   isRainy,
   setIsRainy,
   timelineYear,
-  setTimelineYear
+  setTimelineYear,
+  isSidebarCollapsed = false,
+  setIsSidebarCollapsed = () => {}
 }) => {
   return (
-    <div className="side-panel">
+    <div className={`side-panel ${isSidebarCollapsed ? 'collapsed' : 'expanded'}`}>
       <div className="scanline" />
       <div className="widget" style={{ padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(255,255,255,0.95)', borderBottom: '1px solid var(--glass-border)' }}>
         <Globe size={24} color="var(--accent)" />

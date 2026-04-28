@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import { ScatterplotLayer } from '@deck.gl/layers';
+import { ScatterplotLayer, ColumnLayer, LineLayer } from '@deck.gl/layers';
 import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 import { TripsLayer } from '@deck.gl/geo-layers';
 
@@ -63,6 +63,10 @@ const AdminDashboard = () => {
     longitude: 77.5912, latitude: 12.9797, zoom: 14, pitch: 55, bearing: 0
   });
 
+  useEffect(() => {
+    if (activeCategory) setIsSidebarCollapsed(false);
+  }, [activeCategory]);
+
   const onWebGLInitialized = (gl) => { setGlContext(gl); setGraphicsReady(true); };
 
   useEffect(() => {
@@ -76,13 +80,61 @@ const AdminDashboard = () => {
     return () => cancelAnimationFrame(requestRef);
   }, [isRainy, placedAssets]);
 
+  const generateGrid = () => {
+    const lines = [];
+    const step = 0.0005;
+    const range = 0.02; // Show grid around center
+    const centerLng = Math.round(viewState.longitude / step) * step;
+    const centerLat = Math.round(viewState.latitude / step) * step;
+
+    for (let i = -20; i <= 20; i++) {
+      lines.push({
+        start: [centerLng - range, centerLat + i * step],
+        end: [centerLng + range, centerLat + i * step]
+      });
+      lines.push({
+        start: [centerLng + i * step, centerLat - range],
+        end: [centerLng + i * step, centerLat + range]
+      });
+    }
+    return lines;
+  };
+
   const layers = [
-    new ScatterplotLayer({
-      id: 'agent-layer', data: agents, getPosition: d => d.pos, getFillColor: [255, 204, 0], getRadius: 10, updateTriggers: { getPosition: [time] }
+    new LineLayer({
+      id: 'grid-layer',
+      data: generateGrid(),
+      getSourcePosition: d => d.start,
+      getTargetPosition: d => d.end,
+      getColor: [37, 99, 235, 40],
+      getWidth: 1
     }),
     sentimentEnabled && sentimentData ? new HeatmapLayer({
       id: 'sentiment-heatmap', data: sentimentData.points, getPosition: d => d.coordinates, radiusPixels: 70, opacity: 0.6
-    }) : null
+    }) : null,
+    new ColumnLayer({
+      id: 'placed-assets-layer',
+      data: placedAssets,
+      getPosition: d => [d.lngLat.lng, d.lngLat.lat],
+      getFillColor: d => d.color || [255, 255, 255],
+      getElevation: d => d.height || 10,
+      radius: d => d.radius || 20,
+      extruded: true,
+      pickable: true,
+      elevationScale: 1,
+      onClick: ({ object }) => {
+        if (object) setPlacedAssets(prev => prev.filter(p => p.id !== object.id));
+      }
+    }),
+    new ScatterplotLayer({
+      id: 'street-light-glow',
+      data: placedAssets.filter(d => d.type === 'street-light'),
+      getPosition: d => [d.lngLat.lng, d.lngLat.lat],
+      getFillColor: [255, 244, 0, 150],
+      getRadius: 15,
+      opacity: 0.8,
+      pickable: false
+    })
   ].filter(Boolean);
 
   const handleSearch = async (e) => {
@@ -117,7 +169,15 @@ const AdminDashboard = () => {
     const type = e.dataTransfer.getData('assetType');
     if (!ASSET_TEMPLATES[type]) return;
     const rect = mapRef.current.getContainer().getBoundingClientRect();
-    const lngLat = mapRef.current.unproject([e.clientX - rect.left, e.clientY - rect.top]);
+    const rawLngLat = mapRef.current.unproject([e.clientX - rect.left, e.clientY - rect.top]);
+    
+    // Minecraft-style Grid Snapping (0.0005 deg resolution ~ 50m)
+    const gridSize = 0.0005;
+    const lngLat = {
+      lng: Math.round(rawLngLat.lng / gridSize) * gridSize,
+      lat: Math.round(rawLngLat.lat / gridSize) * gridSize
+    };
+
     setPlacedAssets(prev => [...prev, { id: Date.now(), type, lngLat, ...ASSET_TEMPLATES[type] }]);
   };
 

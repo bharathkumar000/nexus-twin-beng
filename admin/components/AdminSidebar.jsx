@@ -42,7 +42,6 @@ const AdminSidebar = ({
 }) => {
   const handleAction = (callback) => {
     if (callback) callback();
-    setIsSidebarCollapsed(true);
   };
 
   return (
@@ -148,21 +147,118 @@ const AdminSidebar = ({
 
           {activeCategory === 'builder' && (
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-              <div className="panel-section" style={{ marginBottom: '2rem' }}>
-                <span className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}><Hammer size={14} /> ARCHITECTURAL BUILDER</span>
-                {['Buildings', 'Transport', 'Energy'].map(groupName => (
-                  <div key={groupName} style={{ marginTop: '1.5rem' }}>
-                    <h4 style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', letterSpacing: '1px', fontWeight: 900, marginBottom: '0.75rem' }}>{groupName.toUpperCase()}</h4>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
-                      {Object.entries(ASSET_TEMPLATES).filter(([_, a]) => a.group === groupName).map(([name, asset]) => (
-                        <div key={name} draggable onDragStart={(e) => onDragStart(e, name)} className={`asset-card widget ${assetToPlace === name ? 'active' : ''}`} onClick={() => handleAction(() => setAssetToPlace(name))} style={{ padding: '1rem', textAlign: 'center', cursor: 'grab', border: assetToPlace === name ? '1px solid var(--accent)' : '1px solid var(--glass-border)', background: assetToPlace === name ? 'var(--accent-glass)' : 'rgba(255,255,255,0.02)', transition: 'all 0.2s ease' }}>
-                          <div style={{ marginBottom: '0.5rem', color: assetToPlace === name ? 'var(--accent)' : 'var(--text-secondary)' }}>{asset.icon}</div>
-                          <span style={{ fontSize: '0.55rem', fontWeight: 900, letterSpacing: '0.5px' }}>{name.toUpperCase()}</span>
-                        </div>
-                      ))}
+              <div style={{ 
+                background: '#C6C6C6', 
+                borderTop: '4px solid #FFFFFF', 
+                borderLeft: '4px solid #FFFFFF', 
+                borderBottom: '4px solid #555555', 
+                borderRight: '4px solid #555555',
+                padding: '1rem',
+                marginBottom: '2rem',
+                fontFamily: '"Courier New", Courier, monospace',
+                imageRendering: 'pixelated',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+              }}>
+                <div style={{ 
+                  color: '#373737', 
+                  fontSize: '1rem', 
+                  fontWeight: 'bold', 
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  textShadow: '1px 1px 0px rgba(255,255,255,0.8)'
+                }}>
+                  <Hammer size={18} /> INVENTORY
+                </div>
+                
+                {['Buildings', 'Transport', 'Energy'].map(groupName => {
+                  const assets = Object.entries(ASSET_TEMPLATES).filter(([_, a]) => a.group === groupName);
+                  if (assets.length === 0) return null;
+                  
+                  // Calculate padding rows to make it look full
+                  const totalSlots = Math.max(8, Math.ceil(assets.length / 4) * 4);
+                  const emptySlots = totalSlots - assets.length;
+
+                  return (
+                    <div key={groupName} style={{ marginBottom: '1.5rem' }}>
+                      <h4 style={{ 
+                        fontSize: '0.75rem', 
+                        color: '#373737', 
+                        marginBottom: '0.5rem',
+                        textShadow: '1px 1px 0px rgba(255,255,255,0.8)',
+                        fontWeight: 'bold',
+                        letterSpacing: '1px'
+                      }}>{groupName.toUpperCase()}</h4>
+                      <div style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: 'repeat(4, 1fr)', 
+                        gap: '2px',
+                        background: '#8B8B8B',
+                        padding: '6px',
+                        borderTop: '3px solid #373737',
+                        borderLeft: '3px solid #373737',
+                        borderBottom: '3px solid #FFFFFF',
+                        borderRight: '3px solid #FFFFFF'
+                      }}>
+                        {assets.map(([name, asset]) => {
+                          const isActive = assetToPlace === name;
+                          return (
+                            <div 
+                              key={name} 
+                              draggable 
+                              onDragStart={(e) => onDragStart(e, name)} 
+                              onClick={() => handleAction(() => setAssetToPlace(name))} 
+                              title={name.toUpperCase()}
+                              style={{ 
+                                aspectRatio: '1/1',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'grab', 
+                                background: '#8B8B8B',
+                                borderTop: isActive ? '2px solid #FFFFFF' : '2px solid #373737',
+                                borderLeft: isActive ? '2px solid #FFFFFF' : '2px solid #373737',
+                                borderBottom: isActive ? '2px solid #FFFFFF' : '2px solid #FFFFFF',
+                                borderRight: isActive ? '2px solid #FFFFFF' : '2px solid #FFFFFF',
+                                outline: isActive ? '2px solid #FFFFFF' : 'none',
+                                outlineOffset: '-2px',
+                                position: 'relative',
+                                zIndex: isActive ? 10 : 1
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!isActive) e.currentTarget.style.background = '#999999';
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!isActive) e.currentTarget.style.background = '#8B8B8B';
+                              }}
+                            >
+                              {isActive && <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.2)' }} />}
+                              <div style={{ 
+                                color: '#373737', 
+                                transform: isActive ? 'scale(1.2)' : 'scale(1)',
+                                transition: 'transform 0.1s',
+                                filter: 'drop-shadow(1px 1px 0px rgba(255,255,255,0.5))'
+                              }}>
+                                {asset.icon}
+                              </div>
+                            </div>
+                          );
+                        })}
+                        {Array.from({ length: emptySlots }).map((_, i) => (
+                          <div key={`empty-${i}`} style={{
+                            aspectRatio: '1/1',
+                            background: '#8B8B8B',
+                            borderTop: '2px solid #373737',
+                            borderLeft: '2px solid #373737',
+                            borderBottom: '2px solid #FFFFFF',
+                            borderRight: '2px solid #FFFFFF'
+                          }} />
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
           )}
