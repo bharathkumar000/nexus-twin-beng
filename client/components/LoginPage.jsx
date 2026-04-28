@@ -1,11 +1,9 @@
 'use client';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ShieldAlert, User, Lock, Loader2, ArrowLeft, Terminal } from 'lucide-react';
+import { ShieldAlert, User, Lock, Loader2, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
 import { useRouter, useParams } from 'next/navigation';
-
-// API endpoints will be proxied via next.config.mjs or served relatively in production
 
 const LoginPage = () => {
   const { role } = useParams();
@@ -19,7 +17,6 @@ const LoginPage = () => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    
     try {
       const res = await axios.post(`/api/login`, { username, password });
       if (res.data.success) {
@@ -47,8 +44,8 @@ const LoginPage = () => {
           <div className="icon-main data-stream" style={{ margin: '0 auto 1.5rem', width: '90px', height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--glass-border)' }}>
             {isAdmin ? <ShieldAlert size={50} color="var(--danger)" /> : <User size={50} color="var(--accent)" />}
           </div>
-          <h2 style={{ fontSize: '1.8rem', fontWeight: 900, letterSpacing: '4px', background: 'linear-gradient(to right, #fff, var(--text-secondary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{isAdmin ? 'SECURE_SHELL' : 'CITIZEN_GATE'}</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.5rem', letterSpacing: '3px', fontWeight: 700 }}>{isAdmin ? 'ADMIN_COMMAND_AUTHORIZATION' : 'PUBLIC_NETWORK_ACCESS'}</p>
+          <h2 style={{ fontSize: '1.8rem', fontWeight: 900, letterSpacing: '4px', background: 'linear-gradient(to right, #fff, var(--text-secondary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontFamily: 'var(--font-main)' }}>{isAdmin ? 'SECURE_SHELL' : 'CITIZEN_GATE'}</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginTop: '0.5rem', letterSpacing: '3px', fontWeight: 700, fontFamily: 'var(--font-main)' }}>{isAdmin ? 'ADMIN_COMMAND_AUTHORIZATION' : 'PUBLIC_NETWORK_ACCESS'}</p>
         </div>
 
         <form onSubmit={handleLogin} className="login-form">
@@ -73,10 +70,6 @@ const LoginPage = () => {
           <ArrowLeft size={16} /> RETURN TO PORTAL
         </button>
       </motion.div>
-
-      <div className="portal-bg">
-        <div className="grid-overlay" />
-      </div>
     </div>
   );
 };
