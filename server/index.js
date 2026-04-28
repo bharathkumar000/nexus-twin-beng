@@ -248,6 +248,47 @@ app.post('/api/sentiment', (req, res) => {
   res.json({ points: sentimentPoints });
 });
 
+// Real-time Notification System
+let notifications = [
+  {
+    id: 1,
+    policy: "Monsoon Resilience Phase 1",
+    price: "₹85 Crores",
+    location: "NMIT Sector / North Bengaluru",
+    purpose: "Stormwater drainage overhaul to prevent campus-wide inundation.",
+    prediction: "85% reduction in flood risk for the 2024 monsoon season.",
+    duration: "6 Months",
+    timestamp: new Date().toISOString()
+  }
+];
+
+app.get('/api/notifications', (req, res) => {
+  res.json(notifications);
+});
+
+app.post('/api/notifications', (req, res) => {
+  const { policy, price, location, purpose, prediction, duration } = req.body;
+  if (!policy || !price || !location) {
+    return res.status(400).json({ error: 'Policy, Price, and Location are required' });
+  }
+
+  const newNotification = {
+    id: Date.now(),
+    policy,
+    price,
+    location,
+    purpose,
+    prediction,
+    duration,
+    timestamp: new Date().toISOString()
+  };
+  
+  notifications.unshift(newNotification);
+  if (notifications.length > 20) notifications = notifications.slice(0, 20);
+  
+  res.json({ success: true, notification: newNotification });
+});
+
 app.listen(port, () => {
   console.log(`\n🚀 COMMAND CORE ONLINE`);
   console.log(`🔗 API SERVER: http://localhost:${port}`);
