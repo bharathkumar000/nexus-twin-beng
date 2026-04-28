@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   Activity, Bot, Hammer, ShieldAlert, Globe, MessageSquare, 
-  Bus, Car, TrainFront, Building, Building2, Trees, Droplets, Zap, School, Hospital, Warehouse, Route 
+  Bus, Car, TrainFront, Building, Building2, Trees, Droplets, Zap, School, Hospital, Warehouse, Route, FileText 
 } from 'lucide-react';
 
 export const ASSET_TEMPLATES = {
@@ -27,7 +27,7 @@ export const CATEGORIES = {
   strategy: { label: 'STRATEGY', icon: Activity },
   directives: { label: 'DIRECTIVES', icon: Bot },
   builder: { label: 'BUILDER', icon: Hammer },
-  crisis: { label: 'CRISIS', icon: ShieldAlert },
+  policy: { label: 'POLICY', icon: FileText },
   social: { label: 'SOCIAL', icon: Globe },
   reports: { label: 'REPORTS', icon: MessageSquare }
 };

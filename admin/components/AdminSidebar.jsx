@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   ShieldAlert, Activity, Bot, Hammer, Globe, MessageSquare, 
-  History, Target, Send, Megaphone, Loader2, Terminal, X, Heart, MapPin, Trash2
+  History, Target, Send, Megaphone, Loader2, Terminal, X, Heart, MapPin, Trash2, Maximize2, Minimize2
 } from 'lucide-react';
 import { ASSET_TEMPLATES } from '../utils/constants';
 
@@ -43,12 +43,25 @@ const AdminSidebar = ({
   setIsDemolishMode,
   sentimentData
 }) => {
+  const [isMaximized, setIsMaximized] = React.useState(false);
+
   const handleAction = (callback) => {
     if (callback) callback();
   };
 
   return (
-    <div className={`side-panel ${isSidebarCollapsed ? 'collapsed' : 'expanded'}`}>
+    <div 
+      className={`side-panel ${isSidebarCollapsed ? 'collapsed' : 'expanded'}`}
+      style={isMaximized ? { 
+        width: '100vw', 
+        height: '100vh', 
+        maxWidth: '100vw', 
+        top: 0, 
+        left: 0, 
+        zIndex: 9999, 
+        borderRadius: 0 
+      } : {}}
+    >
       <div className="widget" style={{ padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.95)', borderBottom: '1px solid var(--glass-border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <ShieldAlert size={24} color="var(--accent)" />
@@ -57,25 +70,48 @@ const AdminSidebar = ({
             <span style={{ fontSize: '0.5rem', color: 'var(--success)', fontWeight: 900 }}>CMD_ROOT_ACCESS_v4.0</span>
           </div>
         </div>
-        <button 
-          onClick={() => setIsSidebarCollapsed(true)}
-          style={{ 
-            background: 'rgba(0,0,0,0.05)', 
-            border: 'none', 
-            borderRadius: '50%', 
-            width: '28px', 
-            height: '28px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            cursor: 'pointer',
-            transition: 'all 0.2s'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
-          onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}
-        >
-          <X size={16} color="var(--text-secondary)" />
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button 
+            onClick={() => setIsMaximized(!isMaximized)}
+            title={isMaximized ? "Restore" : "Expand Entirely"}
+            style={{ 
+              background: 'rgba(0,0,0,0.05)', 
+              border: 'none', 
+              borderRadius: '50%', 
+              width: '28px', 
+              height: '28px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(37,99,235,0.1)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}
+          >
+            {isMaximized ? <Minimize2 size={14} color="var(--text-secondary)" /> : <Maximize2 size={14} color="var(--text-secondary)" />}
+          </button>
+          <button 
+            onClick={() => { setIsSidebarCollapsed(true); setIsMaximized(false); }}
+            title="Close"
+            style={{ 
+              background: 'rgba(0,0,0,0.05)', 
+              border: 'none', 
+              borderRadius: '50%', 
+              width: '28px', 
+              height: '28px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}
+          >
+            <X size={16} color="var(--text-secondary)" />
+          </button>
+        </div>
       </div>
 
       <div className="widget content-widget" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', borderLeft: '1px solid var(--accent-glass)' }}>
@@ -325,17 +361,50 @@ const AdminSidebar = ({
             </motion.div>
           )}
 
-          {activeCategory === 'crisis' && (
+          {activeCategory === 'policy' && (
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
               <div className="panel-section">
-                <span className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}><ShieldAlert size={14} /> CRISIS_RESPONSE_HUB</span>
-                <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(239,68,68,0.05)', borderRadius: '12px', border: '1px solid rgba(239,68,68,0.1)' }}>
-                  <label className="section-label" style={{ fontSize: '0.6rem', color: 'var(--danger)' }}>SIMULATED_FLOOD_DEPTH: {floodLevel}M</label>
-                  <input type="range" min="0" max="15" value={floodLevel} onChange={e => setFloodLevel(Number(e.target.value))} className="flood-slider" style={{ background: 'rgba(239,68,68,0.2)' }} />
-                  <div style={{ marginTop: '1rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                    <button className={`tab-btn ${showHydrants ? 'active' : ''}`} onClick={() => handleAction(() => setShowHydrants(!showHydrants))} style={{ fontSize: '0.6rem' }}>HYDRANTS</button>
-                    <button className={`tab-btn ${isEmergencyActive ? 'active' : ''}`} onClick={() => handleAction(() => setIsEmergencyActive(!isEmergencyActive))} style={{ fontSize: '0.6rem' }}>EMS_UNIT</button>
+                <span className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}><FileText size={14} /> STRATEGIC_POLICY_HUB</span>
+                
+                <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <input className="search-field" placeholder="Policy Title (e.g., Underground Metro Extension)" value={policyForm.title} onChange={e => setPolicyForm({...policyForm, title: e.target.value})} style={{ background: 'rgba(255,255,255,0.8)' }} />
+                  <input className="search-field" placeholder="Target Location" value={policyForm.location} onChange={e => setPolicyForm({...policyForm, location: e.target.value})} style={{ background: 'rgba(255,255,255,0.8)' }} />
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                    <input className="search-field" placeholder="Budget (₹)" value={policyForm.budget} onChange={e => setPolicyForm({...policyForm, budget: e.target.value})} style={{ background: 'rgba(255,255,255,0.8)' }} />
+                    <input className="search-field" placeholder="Timeline (Months)" value={policyForm.duration} onChange={e => setPolicyForm({...policyForm, duration: e.target.value})} style={{ background: 'rgba(255,255,255,0.8)' }} />
                   </div>
+
+                  <div className="widget" style={{ padding: '1rem', background: 'rgba(37,99,235,0.05)', border: '1px solid rgba(37,99,235,0.2)' }}>
+                    <span className="section-label" style={{ fontSize: '0.55rem', color: 'var(--accent)', marginBottom: '0.5rem', display: 'block' }}>IMPACT_PROJECTIONS</span>
+                    <input className="search-field" placeholder="Traffic Disruption Estimate" value={policyForm.impactTraffic} onChange={e => setPolicyForm({...policyForm, impactTraffic: e.target.value})} style={{ background: 'rgba(255,255,255,0.8)', marginBottom: '0.5rem' }} />
+                    <input className="search-field" placeholder="Underground Utilities Risk" value={policyForm.impactUnderground} onChange={e => setPolicyForm({...policyForm, impactUnderground: e.target.value})} style={{ background: 'rgba(255,255,255,0.8)' }} />
+                  </div>
+
+                  <textarea className="search-field" placeholder="Expected Outcome & ROI..." value={policyForm.outcome} onChange={e => setPolicyForm({...policyForm, outcome: e.target.value})} style={{ background: 'rgba(255,255,255,0.8)', minHeight: '80px', resize: 'vertical' }} />
+
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <button className="action-btn" onClick={() => handleAction(handleAnalyzePolicy)} disabled={isAnalyzingPolicy} style={{ width: '100%' }}>
+                      {isAnalyzingPolicy ? <Loader2 className="spin" size={16} /> : 'ANALYZE POLICY (GEMMA_AI)'}
+                    </button>
+                  </div>
+
+                  {aiPolicyScore !== null && (
+                    <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(10,11,16,0.9)', borderRadius: '12px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
+                      <span style={{ fontSize: '0.6rem', color: 'var(--text-secondary)' }}>AI_VIABILITY_SCORE</span>
+                      <div style={{ fontSize: '2rem', fontWeight: 900, color: aiPolicyScore >= 75 ? 'var(--success)' : 'var(--danger)', margin: '0.5rem 0' }}>
+                        {aiPolicyScore}%
+                      </div>
+                      {aiPolicyScore >= 75 ? (
+                        <button className="action-btn" onClick={() => handleAction(handleBroadcastPolicy)} style={{ width: '100%', background: 'var(--success)' }}>
+                          DEPLOY APPROVED POLICY
+                        </button>
+                      ) : (
+                        <span style={{ fontSize: '0.6rem', color: 'var(--danger)' }}>THRESHOLD NOT MET (REQUIRES 75%+)</span>
+                      )}
+                    </div>
+                  )}
+
                 </div>
               </div>
             </motion.div>

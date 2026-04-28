@@ -45,7 +45,10 @@ const AdminDashboard = () => {
   const [aiSuggestion, setAiSuggestion] = useState(null);
   const [advisorLog, setAdvisorLog] = useState([{ role: 'ai', content: 'SYSTEM_READY. Awaiting directives.' }]);
   const [advisorQuery, setAdvisorQuery] = useState('');
-  const [policyForm, setPolicyForm] = useState({ policy: '', purpose: '', location: 'MG Road', price: '₹45Cr', duration: '12 Months' });
+  const [policyForm, setPolicyForm] = useState({ title: '', location: '', budget: '', duration: '', impactUnderground: '', impactTraffic: '', outcome: '' });
+  const [aiPolicyScore, setAiPolicyScore] = useState(null);
+  const [isAnalyzingPolicy, setIsAnalyzingPolicy] = useState(false);
+  const [activeNotification, setActiveNotification] = useState(null);
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [assetToPlace, setAssetToPlace] = useState(null);
   const [placedAssets, setPlacedAssets] = useState([]);
@@ -192,9 +195,33 @@ const AdminDashboard = () => {
     setTimeout(() => setAdvisorLog(p => [...p, { role: 'ai', content: "Strategic assessment complete. Location: "+policyForm.location+". Recommendation: Deploy transit hub." }]), 1000);
   };
 
+  const handleAnalyzePolicy = () => {
+    setIsAnalyzingPolicy(true);
+    setAiPolicyScore(null);
+    // Simulating Ollama Gemma 4 policy audit based on input completeness
+    setTimeout(() => {
+      const isComplete = policyForm.title && policyForm.budget && policyForm.impactTraffic;
+      const score = isComplete ? Math.floor(Math.random() * 15) + 80 : Math.floor(Math.random() * 20) + 50;
+      setAiPolicyScore(score);
+      setIsAnalyzingPolicy(false);
+    }, 2500);
+  };
+
   const handleBroadcastPolicy = () => {
     setIsBroadcasting(true);
-    setTimeout(() => { setIsBroadcasting(false); alert("POLICY DEPLOYED"); }, 1500);
+    setTimeout(() => { 
+      setIsBroadcasting(false); 
+      setActiveNotification({
+        id: Date.now(),
+        type: 'GLOBAL_DIRECTIVE',
+        title: policyForm.title || 'URBAN POLICY DEPLOYMENT',
+        data: policyForm,
+        score: aiPolicyScore,
+        timestamp: new Date().toLocaleTimeString()
+      });
+      setPolicyForm({ title: '', location: '', budget: '', duration: '', impactUnderground: '', impactTraffic: '', outcome: '' });
+      setAiPolicyScore(null);
+    }, 1500);
   };
 
   const onDragStart = (e, type) => e.dataTransfer.setData('assetType', type);
@@ -271,6 +298,9 @@ const AdminDashboard = () => {
         publicRequests={publicRequests}
         setSelectedRequest={setSelectedRequest}
         flyTo={flyTo}
+        aiPolicyScore={aiPolicyScore}
+        isAnalyzingPolicy={isAnalyzingPolicy}
+        handleAnalyzePolicy={handleAnalyzePolicy}
         isSidebarCollapsed={isSidebarCollapsed}
         setIsSidebarCollapsed={setIsSidebarCollapsed}
         isDemolishMode={isDemolishMode}
@@ -300,6 +330,45 @@ const AdminDashboard = () => {
       />
 
       {battleMode && <ScenarioBattle setBattleMode={setBattleMode} />}
+
+      {activeNotification && (
+        <div style={{ position: 'fixed', top: '20px', left: '50%', transform: 'translateX(-50%)', zIndex: 10000, background: 'rgba(10,11,16,0.95)', border: '1px solid var(--accent)', borderRadius: '12px', padding: '1.5rem', width: '400px', boxShadow: '0 20px 40px rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.7rem', fontWeight: 900, color: 'var(--accent)', letterSpacing: '1px' }}>GLOBAL_DIRECTIVE_DEPLOYED</span>
+            <button onClick={() => setActiveNotification(null)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}>X</button>
+          </div>
+          <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1rem' }}>{activeNotification.title}</h3>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+            <div style={{ background: 'rgba(255,255,255,0.05)', padding: '0.5rem', borderRadius: '8px' }}>
+              <span style={{ display: 'block', fontSize: '0.5rem', color: 'var(--text-secondary)' }}>BUDGET ALLOCATION</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--warning)', fontWeight: 800 }}>{activeNotification.data.budget || 'N/A'}</span>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.05)', padding: '0.5rem', borderRadius: '8px' }}>
+              <span style={{ display: 'block', fontSize: '0.5rem', color: 'var(--text-secondary)' }}>ESTIMATED TIMELINE</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--success)', fontWeight: 800 }}>{activeNotification.data.duration || 'N/A'}</span>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '1rem' }}>
+            <span style={{ display: 'block', fontSize: '0.55rem', color: 'var(--accent)', marginBottom: '0.25rem' }}>IMPACT ANALYSIS</span>
+            <p style={{ fontSize: '0.65rem', color: 'var(--text-primary)', lineHeight: '1.4' }}>
+              <strong>Underground:</strong> {activeNotification.data.impactUnderground || 'No data'}<br/>
+              <strong>Traffic:</strong> {activeNotification.data.impactTraffic || 'No data'}
+            </p>
+          </div>
+
+          <div style={{ marginBottom: '1.5rem', padding: '0.75rem', background: 'rgba(37,99,235,0.1)', borderRadius: '8px', borderLeft: '3px solid var(--accent)' }}>
+            <span style={{ display: 'block', fontSize: '0.55rem', color: 'var(--accent)', marginBottom: '0.25rem' }}>EXPECTED OUTCOME</span>
+            <p style={{ fontSize: '0.7rem', color: 'var(--text-primary)' }}>{activeNotification.data.outcome || 'N/A'}</p>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.75rem', borderTop: '1px solid var(--glass-border)' }}>
+            <span style={{ fontSize: '0.6rem', color: 'var(--text-secondary)' }}>AI_VIABILITY_SCORE:</span>
+            <span style={{ fontSize: '1rem', fontWeight: 900, color: activeNotification.score >= 75 ? 'var(--success)' : 'var(--danger)' }}>{activeNotification.score}%</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

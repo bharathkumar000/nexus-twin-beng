@@ -44,12 +44,6 @@ const AdminDock = ({
           }}>
           <Layers size={18} /><span>{currentStyle.toUpperCase()}</span>
         </button>
-        <button className={`dock-btn ${isSplitScreen ? 'active' : ''}`} onClick={() => setIsSplitScreen(!isSplitScreen)}>
-          <Layers size={18} /><span>SPLIT VIEW</span>
-        </button>
-        <button className={`dock-btn ${activeSmartZones ? 'active' : ''}`} onClick={() => setActiveSmartZones(!activeSmartZones)}>
-          <Target size={18} /><span>SMART ZONES</span>
-        </button>
         <button className="dock-btn danger" onClick={handleLogout} style={{ color: 'var(--danger)' }}>
           <LogOut size={18} /><span>EXIT</span>
         </button>
