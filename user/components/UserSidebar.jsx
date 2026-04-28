@@ -1,5 +1,4 @@
-import React from 'react';
-import { Terminal, Leaf, ShieldAlert, History, Globe } from 'lucide-react';
+import { Terminal, Leaf, ShieldAlert, History, Globe, X } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 
 const UserSidebar = ({ 
@@ -21,12 +20,33 @@ const UserSidebar = ({
   return (
     <div className={`side-panel ${isSidebarCollapsed ? 'collapsed' : 'expanded'}`}>
       <div className="scanline" />
-      <div className="widget" style={{ padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(255,255,255,0.95)', borderBottom: '1px solid var(--glass-border)' }}>
-        <Globe size={24} color="var(--accent)" />
-        <div className="header-text">
-          <h2 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '1px' }}>CITIZEN NEXUS</h2>
-          <span style={{ fontSize: '0.5rem', color: 'var(--success)', fontWeight: 900 }}>PUBLIC_CORE_v4.0</span>
+      <div className="widget" style={{ padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.95)', borderBottom: '1px solid var(--glass-border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <Globe size={24} color="var(--accent)" />
+          <div className="header-text">
+            <h2 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '1px' }}>CITIZEN NEXUS</h2>
+            <span style={{ fontSize: '0.5rem', color: 'var(--success)', fontWeight: 900 }}>PUBLIC_CORE_v4.0</span>
+          </div>
         </div>
+        <button 
+          onClick={() => setIsSidebarCollapsed(true)}
+          style={{ 
+            background: 'rgba(0,0,0,0.05)', 
+            border: 'none', 
+            borderRadius: '50%', 
+            width: '28px', 
+            height: '28px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+          onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}
+        >
+          <X size={16} color="var(--text-secondary)" />
+        </button>
       </div>
 
       <div className="widget content-widget" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>

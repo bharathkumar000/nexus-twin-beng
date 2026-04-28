@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   ShieldAlert, Activity, Bot, Hammer, Globe, MessageSquare, 
-  History, Target, Send, Megaphone, Loader2, Terminal
+  History, Target, Send, Megaphone, Loader2, Terminal, X, Heart, MapPin
 } from 'lucide-react';
 import { ASSET_TEMPLATES } from '../utils/constants';
 
@@ -46,12 +46,33 @@ const AdminSidebar = ({
 
   return (
     <div className={`side-panel ${isSidebarCollapsed ? 'collapsed' : 'expanded'}`}>
-      <div className="widget" style={{ padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(255,255,255,0.95)', borderBottom: '1px solid var(--glass-border)' }}>
-        <ShieldAlert size={24} color="var(--accent)" />
-        <div className="header-text">
-          <h2 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '1px' }}>ADMIN NEXUS</h2>
-          <span style={{ fontSize: '0.5rem', color: 'var(--success)', fontWeight: 900 }}>CMD_ROOT_ACCESS_v4.0</span>
+      <div className="widget" style={{ padding: '0.75rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.95)', borderBottom: '1px solid var(--glass-border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <ShieldAlert size={24} color="var(--accent)" />
+          <div className="header-text">
+            <h2 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '1px' }}>ADMIN NEXUS</h2>
+            <span style={{ fontSize: '0.5rem', color: 'var(--success)', fontWeight: 900 }}>CMD_ROOT_ACCESS_v4.0</span>
+          </div>
         </div>
+        <button 
+          onClick={() => setIsSidebarCollapsed(true)}
+          style={{ 
+            background: 'rgba(0,0,0,0.05)', 
+            border: 'none', 
+            borderRadius: '50%', 
+            width: '28px', 
+            height: '28px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+          onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}
+        >
+          <X size={16} color="var(--text-secondary)" />
+        </button>
       </div>
 
       <div className="widget content-widget" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', borderLeft: '1px solid var(--accent-glass)' }}>
