@@ -92,9 +92,6 @@ const UserDashboard = () => {
     new ScatterplotLayer({
       id: 'agent-layer', data: agents, getPosition: d => d.pos, getFillColor: [255, 204, 0], getRadius: 10, updateTriggers: { getPosition: [time] }
     }),
-    new TripsLayer({
-      id: 'trips-layer', data: agents, getPath: d => d.path.map(p => p.pos), getTimestamps: d => d.path.map(p => p.time), getColor: [255, 204, 0], trailLength: 12, currentTime: Date.now() / 1000
-    }),
     sentimentEnabled && sentimentData ? new HeatmapLayer({
       id: 'sentiment-heatmap', data: sentimentData.points, getPosition: d => d.coordinates, radiusPixels: 70, opacity: 0.6
     }) : null,
