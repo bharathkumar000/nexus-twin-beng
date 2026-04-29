@@ -6,56 +6,68 @@ const UrbanHUD = ({ cityStats, lastActionImpact }) => {
   return (
     <div className="urban-hud-container" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 1000, padding: '2rem' }}>
       
-      {/* TOP BAR STATS */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem' }}>
-        <motion.div 
-          initial={{ y: -50, opacity: 0 }} 
-          animate={{ y: 0, opacity: 1 }}
-          style={{ 
-            background: 'rgba(10, 11, 16, 0.85)', 
-            backdropFilter: 'blur(10px)', 
-            padding: '0.75rem 1.5rem', 
-            borderRadius: '16px', 
-            border: '1px solid rgba(255,255,255,0.1)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1.5rem',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-            pointerEvents: 'auto'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <TrendingUp size={18} color="var(--accent)" />
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: '0.55rem', fontWeight: 900, color: 'rgba(255,255,255,0.4)', letterSpacing: '1px' }}>PROSPERITY</span>
-              <span style={{ fontSize: '1rem', fontWeight: 900, color: '#fff' }}>{cityStats.prosperity.toLocaleString()}</span>
+      {/* VERTICAL STATS ON THE RIGHT */}
+      <div style={{ 
+        position: 'absolute', 
+        top: '2rem', 
+        right: '2rem', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: '0.75rem',
+        zIndex: 1001
+      }}>
+        {[
+          { label: 'PROSPERITY', value: cityStats.prosperity.toLocaleString(), icon: <TrendingUp size={18} color="var(--accent)" />, delay: 0.1 },
+          { label: 'HAPPINESS', value: `${cityStats.happiness}%`, icon: <Heart size={18} color="#ec4899" />, delay: 0.2 },
+          { label: 'POPULATION', value: cityStats.population.toLocaleString(), icon: <Users size={18} color="#10b981" />, delay: 0.3 }
+        ].map((stat, i) => (
+          <motion.div 
+            key={stat.label}
+            initial={{ x: 50, opacity: 0 }} 
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: stat.delay }}
+            style={{ 
+              background: 'rgba(10, 11, 16, 0.85)', 
+              backdropFilter: 'blur(10px)', 
+              padding: '0.75rem 1.25rem', 
+              borderRadius: '12px', 
+              border: '1px solid rgba(255,255,255,0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+              pointerEvents: 'auto',
+              minWidth: '180px'
+            }}
+          >
+            <div style={{ 
+              width: '36px', 
+              height: '36px', 
+              borderRadius: '8px', 
+              background: 'rgba(255,255,255,0.05)', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center' 
+            }}>
+              {stat.icon}
             </div>
-          </div>
-
-          <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)' }} />
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <Heart size={18} color="#ec4899" />
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: '0.55rem', fontWeight: 900, color: 'rgba(255,255,255,0.4)', letterSpacing: '1px' }}>HAPPINESS</span>
-              <span style={{ fontSize: '1rem', fontWeight: 900, color: '#fff' }}>{cityStats.happiness}%</span>
+              <span style={{ fontSize: '0.5rem', fontWeight: 900, color: 'rgba(255,255,255,0.4)', letterSpacing: '1px' }}>{stat.label}</span>
+              <motion.span 
+                key={stat.value}
+                initial={{ scale: 1.1, color: 'var(--accent)' }}
+                animate={{ scale: 1, color: '#fff' }}
+                style={{ fontSize: '1.1rem', fontWeight: 900 }}
+              >
+                {stat.value}
+              </motion.span>
             </div>
-          </div>
-
-          <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)' }} />
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <Users size={18} color="#10b981" />
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: '0.55rem', fontWeight: 900, color: 'rgba(255,255,255,0.4)', letterSpacing: '1px' }}>POPULATION</span>
-              <span style={{ fontSize: '1rem', fontWeight: 900, color: '#fff' }}>{cityStats.population.toLocaleString()}</span>
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        ))}
       </div>
 
-      {/* RIGHT SIDE IMPACT POPUP */}
-      <div style={{ position: 'absolute', top: '6rem', right: '2rem', width: '320px' }}>
+      {/* RIGHT SIDE IMPACT POPUP - Positioned below the stats */}
+      <div style={{ position: 'absolute', top: '16rem', right: '2rem', width: '320px' }}>
         <AnimatePresence>
           {lastActionImpact && (
             <motion.div

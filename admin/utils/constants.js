@@ -27,5 +27,5 @@ export const CATEGORIES = {
   strategy: { label: 'STRATEGY & DIRECTIVES', icon: Activity },
   builder: { label: 'BUILDER', icon: Hammer },
   policy: { label: 'POLICY', icon: FileText },
-  social: { label: 'SOCIAL & REPORTS', icon: Globe }
+  social: { label: 'REPORTS & GRIEVANCES', icon: MessageSquare }
 };

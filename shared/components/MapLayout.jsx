@@ -3,41 +3,6 @@ import maplibregl from 'maplibre-gl';
 import { DeckGL } from '@deck.gl/react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-// Generate a GeoJSON FeatureCollection of grid squares anchored to the city
-const buildGridGeoJSON = (centerLng, centerLat) => {
-  const step = 0.0005; // ~50m per cell
-  const range = 40;
-  const anchorLng = Math.floor(centerLng / 0.01) * 0.01;
-  const anchorLat = Math.floor(centerLat / 0.01) * 0.01;
-  const features = [];
-
-  for (let x = -range; x <= range; x++) {
-    for (let y = -range; y <= range; y++) {
-      const lng = anchorLng + x * step;
-      const lat = anchorLat + y * step;
-      features.push({
-        type: 'Feature',
-        properties: {
-          cellId: `${lng.toFixed(5)}_${lat.toFixed(5)}`,
-          lng: parseFloat(lng.toFixed(6)),
-          lat: parseFloat(lat.toFixed(6))
-        },
-        geometry: {
-          type: 'Polygon',
-          coordinates: [[
-            [lng, lat],
-            [lng + step, lat],
-            [lng + step, lat + step],
-            [lng, lat + step],
-            [lng, lat]
-          ]]
-        }
-      });
-    }
-  }
-  return { type: 'FeatureCollection', features };
-};
-
 const MapLayout = ({ 
   viewState, 
   layers, 
@@ -48,9 +13,9 @@ const MapLayout = ({
   onViewStateChange,
   onBuildingClick,
   selectedBuildingIds = [],
-  isGridEnabled = false,
-  selectedGridCells = [],
-  onGridCellClick,
+  gridData = null,
+  onGridClick = null,
+  selectedGridCellId = null,
   children 
 }) => {
   const mapContainer = useRef(null);
@@ -68,7 +33,8 @@ const MapLayout = ({
           'google-hybrid': { type: 'raster', tiles: ['https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'], tileSize: 256 },
           'buildings': { type: 'geojson', data: '/data/bengaluru_buildings.json', generateId: true },
           'infrastructure': { type: 'geojson', data: '/data/bengaluru_infrastructure.json' },
-          'utilities': { type: 'geojson', data: '/data/bengaluru_utilities.json' }
+          'utilities': { type: 'geojson', data: '/data/bengaluru_utilities.json' },
+          'grid-source': { type: 'geojson', data: { type: 'FeatureCollection', features: [] }, promoteId: 'id' }
         },
         glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
         layers: [
@@ -76,6 +42,23 @@ const MapLayout = ({
           { id: 'hybrid-tiles', type: 'raster', source: 'google-hybrid', layout: { visibility: 'visible' } },
           { id: 'satellite-tiles', type: 'raster', source: 'google-satellite', layout: { visibility: 'none' } },
           { id: 'street-tiles', type: 'raster', source: 'google-roads', layout: { visibility: 'none' } },
+          
+          // MINECRAFT GRID — rendered on the ground (first in stack)
+          {
+            id: 'minecraft-grid',
+            type: 'fill',
+            source: 'grid-source',
+            paint: {
+              'fill-color': [
+                'case',
+                ['boolean', ['feature-state', 'selected'], false],
+                'rgba(37, 99, 235, 0.4)',
+                'rgba(0, 0, 0, 0)'
+              ],
+              'fill-outline-color': 'rgba(255, 255, 255, 0.2)'
+            }
+          },
+          
           {
             id: 'utility-pipes',
             type: 'line',
@@ -128,95 +111,30 @@ const MapLayout = ({
     });
 
     let hoveredId = null;
-    let hoveredGridId = null;
 
     map.current.on('load', () => {
-
-      // --- MINECRAFT GRID: native MapLibre source + layers on the ground ---
-      const gridGeoJSON = buildGridGeoJSON(viewState.longitude, viewState.latitude);
-      map.current.addSource('minecraft-grid', {
-        type: 'geojson',
-        data: gridGeoJSON,
-        generateId: true
-      });
-
-      // Grid fill layer (flat on the ground, below buildings)
-      map.current.addLayer({
-        id: 'grid-fill',
-        type: 'fill',
-        source: 'minecraft-grid',
-        paint: {
-          'fill-color': [
-            'case',
-            ['boolean', ['feature-state', 'selected'], false],
-            'rgba(37, 99, 235, 0.45)',
-            ['boolean', ['feature-state', 'hover'], false],
-            'rgba(37, 99, 235, 0.15)',
-            'rgba(0, 0, 0, 0)'
-          ],
-          'fill-opacity': 1
-        },
-        layout: { visibility: 'none' }
-      }, '3d-buildings'); // Insert BELOW the buildings layer
-
-      // Grid outline layer
-      map.current.addLayer({
-        id: 'grid-lines',
-        type: 'line',
-        source: 'minecraft-grid',
-        paint: {
-          'line-color': 'rgba(255, 255, 255, 0.25)',
-          'line-width': 1
-        },
-        layout: { visibility: 'none' }
-      }, '3d-buildings'); // Insert BELOW the buildings layer
-
-      // Grid hover
-      map.current.on('mousemove', 'grid-fill', (e) => {
-        if (e.features.length > 0) {
-          if (hoveredGridId !== null) {
-            map.current.setFeatureState({ source: 'minecraft-grid', id: hoveredGridId }, { hover: false });
-          }
-          hoveredGridId = e.features[0].id;
-          map.current.setFeatureState({ source: 'minecraft-grid', id: hoveredGridId }, { hover: true });
-          map.current.getCanvas().style.cursor = 'cell';
+      // Grid selection
+      map.current.on('click', 'minecraft-grid', (e) => {
+        if (e.features.length > 0 && onGridClick) {
+          onGridClick(e.features[0].properties.id);
         }
       });
-      map.current.on('mouseleave', 'grid-fill', () => {
-        if (hoveredGridId !== null) {
-          map.current.setFeatureState({ source: 'minecraft-grid', id: hoveredGridId }, { hover: false });
-        }
-        hoveredGridId = null;
-        map.current.getCanvas().style.cursor = '';
-      });
 
-      // Grid click
-      map.current.on('click', 'grid-fill', (e) => {
-        if (e.features.length > 0 && onGridCellClick) {
-          const f = e.features[0];
-          onGridCellClick({
-            id: f.id,
-            cellId: f.properties.cellId,
-            lngLat: { lng: f.properties.lng, lat: f.properties.lat },
-            isShiftPressed: e.originalEvent.shiftKey
-          });
-        }
-      });
       // Hover effect on buildings
       map.current.on('mousemove', '3d-buildings', (e) => {
         if (e.features.length > 0) {
           if (hoveredId !== null) {
-            map.current.setFeatureState({ source: 'buildings', id: hoveredId }, { hover: false });
+            try { map.current.setFeatureState({ source: 'buildings', id: hoveredId }, { hover: false }); } catch(err){}
           }
           hoveredId = e.features[0].id;
-          map.current.setFeatureState({ source: 'buildings', id: hoveredId }, { hover: true });
+          try { map.current.setFeatureState({ source: 'buildings', id: hoveredId }, { hover: true }); } catch(err){}
           map.current.getCanvas().style.cursor = 'pointer';
         }
       });
 
       map.current.on('mouseleave', '3d-buildings', () => {
         if (hoveredId !== null) {
-          map.current.setFeatureState({ source: 'buildings', id: hoveredId }, { hover: false });
+          try { map.current.setFeatureState({ source: 'buildings', id: hoveredId }, { hover: false }); } catch(err){}
         }
         hoveredId = null;
         map.current.getCanvas().style.cursor = '';
@@ -244,6 +162,27 @@ const MapLayout = ({
       onMapLoad(map.current);
     });
   }, []);
+
+  useEffect(() => {
+    if (!map.current || !map.current.isStyleLoaded() || !gridData) return;
+    const source = map.current.getSource('grid-source');
+    if (source) source.setData(gridData);
+  }, [gridData]);
+
+  // Handle selected grid cell highlight
+  const prevGridSelectedRef = useRef(null);
+  useEffect(() => {
+    if (!map.current || !map.current.isStyleLoaded()) return;
+    if (prevGridSelectedRef.current !== null) {
+      try { map.current.setFeatureState({ source: 'grid-source', id: prevGridSelectedRef.current }, { selected: false }); } catch(err){}
+    }
+    if (selectedGridCellId !== null) {
+      // Feature states in MapLibre for GeoJSON require the feature to have a numeric ID or we use promoteId
+      // In gridData, I'll make sure each feature has an id property
+      try { map.current.setFeatureState({ source: 'grid-source', id: selectedGridCellId }, { selected: true }); } catch(err){}
+    }
+    prevGridSelectedRef.current = selectedGridCellId;
+  }, [selectedGridCellId, gridData]);
 
   // Handle selected building highlight
   const prevSelectedRef = useRef([]);
@@ -292,34 +231,6 @@ const MapLayout = ({
       map.current.setPaintProperty('3d-buildings', 'fill-extrusion-opacity', isXrayEnabled ? 0.15 : 0.88);
     }
   }, [currentStyle, isXrayEnabled]);
-
-  // Toggle grid visibility
-  useEffect(() => {
-    if (!map.current || !map.current.isStyleLoaded()) return;
-    const vis = isGridEnabled ? 'visible' : 'none';
-    if (map.current.getLayer('grid-fill')) map.current.setLayoutProperty('grid-fill', 'visibility', vis);
-    if (map.current.getLayer('grid-lines')) map.current.setLayoutProperty('grid-lines', 'visibility', vis);
-  }, [isGridEnabled]);
-
-  // Sync selected grid cells
-  const prevGridRef = useRef([]);
-  useEffect(() => {
-    if (!map.current || !map.current.isStyleLoaded() || !map.current.getSource('minecraft-grid')) return;
-    
-    // Clear old
-    prevGridRef.current.forEach(id => {
-      if (!selectedGridCells.includes(id)) {
-        try { map.current.setFeatureState({ source: 'minecraft-grid', id }, { selected: false }); } catch (e) {}
-      }
-    });
-    // Set new
-    selectedGridCells.forEach(id => {
-      if (!prevGridRef.current.includes(id)) {
-        try { map.current.setFeatureState({ source: 'minecraft-grid', id }, { selected: true }); } catch (e) {}
-      }
-    });
-    prevGridRef.current = [...selectedGridCells];
-  }, [selectedGridCells]);
 
   // Sync MapLibre camera with Deck.gl viewState
   useEffect(() => {

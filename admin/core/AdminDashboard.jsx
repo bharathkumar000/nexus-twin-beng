@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import { ScatterplotLayer, ColumnLayer, LineLayer } from '@deck.gl/layers';
+import { ScatterplotLayer, ColumnLayer, LineLayer, PolygonLayer } from '@deck.gl/layers';
 import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 import { TripsLayer } from '@deck.gl/geo-layers';
 
@@ -68,14 +68,14 @@ const AdminDashboard = () => {
   const [sentimentData, setSentimentData] = useState(null);
   const [isDemolishMode, setIsDemolishMode] = useState(false);
   const [selectedBuildings, setSelectedBuildings] = useState([]);
-  const [selectedGridCells, setSelectedGridCells] = useState([]);
+  const [selectedGridCell, setSelectedGridCell] = useState(null);
 
   const [viewState, setViewState] = useState({
     longitude: 77.5912, latitude: 12.9797, zoom: 14, pitch: 55, bearing: 0
   });
 
   // GAME ENGINE STATE
-  const [cityStats, setCityStats] = useState({ prosperity: 1250, happiness: 72, population: 45000 });
+  const [cityStats, setCityStats] = useState({ prosperity: 1250, happiness: 72, population: 45000, level: 12 });
   const [lastActionImpact, setLastActionImpact] = useState(null);
   const impactTimeout = useRef(null);
 
@@ -197,6 +197,20 @@ const AdminDashboard = () => {
   };
 
   const layers = [
+    new PolygonLayer({
+      id: 'minecraft-grid-layer',
+      data: generateGrid(),
+      getPolygon: d => d.polygon,
+      stroked: true,
+      filled: true,
+      getLineColor: [255, 255, 255, 50],
+      getFillColor: d => selectedGridCell === d.id ? [37, 99, 235, 100] : [0, 0, 0, 0],
+      lineWidthMinPixels: 1,
+      pickable: true,
+      onClick: ({ object }) => {
+        if (object) setSelectedGridCell(object.id);
+      }
+    }),
     sentimentEnabled && sentimentData ? new HeatmapLayer({
       id: 'sentiment-heatmap', 
       data: sentimentData.points, 
@@ -472,18 +486,6 @@ const AdminDashboard = () => {
           }
         }}
         selectedBuildingIds={selectedBuildings.map(b => b.id)}
-        isGridEnabled={activeCategory === 'builder'}
-        selectedGridCells={selectedGridCells}
-        onGridCellClick={(cell) => {
-          if (cell.isShiftPressed) {
-            setSelectedGridCells(prev => {
-              if (prev.includes(cell.id)) return prev.filter(id => id !== cell.id);
-              return [...prev, cell.id];
-            });
-          } else {
-            setSelectedGridCells(prev => prev.includes(cell.id) ? [] : [cell.id]);
-          }
-        }}
       >
         {isSplitScreen && <div className="split-divider" />}
       </MapLayout>
