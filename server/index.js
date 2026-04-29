@@ -510,6 +510,12 @@ app.post('/api/complaints/:id/resolve', async (req, res) => {
   }
 });
 
+// Catch-all for missing API routes to help debug 404s
+app.use('/api/*', (req, res) => {
+  console.warn(`[404_DETECTION] Missing API Endpoint: ${req.method} ${req.originalUrl}`);
+  res.status(404).json({ error: `Endpoint ${req.originalUrl} not found on Command Core.` });
+});
+
 app.listen(port, () => {
   console.log(`\n🚀 COMMAND CORE ONLINE`);
   console.log(`🔗 API SERVER: http://localhost:${port}`);

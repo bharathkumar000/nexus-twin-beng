@@ -1,6 +1,7 @@
-import { Terminal, Leaf, ShieldAlert, History, Globe, X, Camera, MessageSquare, AlertCircle, Bell } from 'lucide-react';
+import { Terminal, Leaf, ShieldAlert, History, Globe, X, Camera, MessageSquare, AlertCircle, Bell, TrendingUp } from 'lucide-react';
 import React, { useState, useRef } from 'react';
 import { Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const UserSidebar = ({ 
   handleFetchSentiment, 

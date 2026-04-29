@@ -55,7 +55,7 @@ const UserDashboard = () => {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const res = await axios.get('http://localhost:3001/api/reports');
+        const res = await axios.get('http://localhost:3001/api/complaints');
         setPublicRequests(res.data);
       } catch (err) { console.error("Request fetch failed", err); }
     };
