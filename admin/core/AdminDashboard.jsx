@@ -516,31 +516,6 @@ const AdminDashboard = () => {
       setIsAnalyzingPolicy(false);
     }
   };
-  
-  const handleDownloadReport = () => {
-    if (!aiPolicyReport) return;
-    const reportText = `
-Nexus Twin - POLICY VIABILITY REPORT
-------------------------------------------
-TITLE: ${policyForm.title || 'Untitled Policy'}
-SCORE: ${aiPolicyReport.score}% (${aiPolicyReport.status})
-
-BREAKDOWN:
-${aiPolicyReport.breakdown.map(b => `- ${b.label}: ${b.value}`).join('\n')}
-
-REASONS FOR RATING:
-${aiPolicyReport.reasons.map(r => `- ${r}`).join('\n')}
-
-AI SUGGESTIONS FOR IMPROVEMENT:
-${aiPolicyReport.suggestions.map(s => `- ${s}`).join('\n')}
-    `;
-    const blob = new Blob([reportText], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Policy_Report_${Date.now()}.txt`;
-    a.click();
-  };
 
   const handleDownloadReport = () => {
     if (!aiPolicyReport) return showToast("No report data available.", "warning");

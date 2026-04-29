@@ -157,7 +157,6 @@ const UserSidebar = ({
               ))}
             </div>
           </div>
-          </AnimatePresence>
           )}
 
           {currentTab === 'complaints' && (
