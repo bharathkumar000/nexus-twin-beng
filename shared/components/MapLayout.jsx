@@ -21,6 +21,7 @@ const MapLayout = ({
 }) => {
   const mapContainer = useRef(null);
   const map = useRef(null);
+  const hoveredIdRef = useRef(null);
 
   const [mapLoaded, setMapLoaded] = React.useState(false);
 
@@ -140,8 +141,6 @@ const MapLayout = ({
       bearing: viewState.bearing || 0,
       antialias: true
     });
-
-    const hoveredIdRef = { current: null };
 
     map.current.on('load', () => {
       setMapLoaded(true);

@@ -1,7 +1,7 @@
-import { MapPin, Camera, MessageSquare, AlertCircle, Bell, TrendingUp, RefreshCw, X, ShieldAlert, Globe, CheckCircle2, Clock, ArrowUpCircle, Search } from 'lucide-react';
+import { MapPin, Camera, MessageSquare, AlertCircle, Bell, TrendingUp, RefreshCw, X, ShieldAlert, Globe, CheckCircle2, Clock, ArrowUpCircle, Search, FileText, User, Coins } from 'lucide-react';
 import React, { useState, useRef } from 'react';
 import { Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const UserSidebar = ({ 
   isSidebarCollapsed = false,
@@ -10,9 +10,11 @@ const UserSidebar = ({
   notifications = [],
   myReports = [],
   handleUpvote = () => {},
-  activeTab = 'notifications' // Default tab
+  activeTab = 'notifications', // Default tab
+  showToast = () => {}
 }) => {
   const [currentTab, setCurrentTab] = useState(activeTab);
+  const [selectedNotif, setSelectedNotif] = useState(null);
 
   // Sync internal state with prop
   React.useEffect(() => {
@@ -40,18 +42,18 @@ const UserSidebar = ({
         setIsLocating(false);
       }, (error) => {
         console.error(error);
-        alert("GEOLOCATION_ERROR: Protocol failed.");
+        showToast("GEOLOCATION_ERROR: Protocol failed.", "error");
         setIsLocating(false);
       });
     } else {
-      alert("ERROR: Geolocation not supported.");
+      showToast("ERROR: Geolocation not supported.", "error");
       setIsLocating(false);
     }
   };
 
   const onSubmit = async () => {
-    if (!complaintForm.description) return alert("Please provide a description.");
-    if (!complaintForm.location) return alert("Please tag your location.");
+    if (!complaintForm.description) return showToast("Please provide a description.", "warning");
+    if (!complaintForm.location) return showToast("Please tag your location.", "warning");
     setIsSubmitting(true);
     const success = await handleFileComplaint(complaintForm);
     if (success) {
@@ -100,8 +102,8 @@ const UserSidebar = ({
         </button>
       </div>
 
-      <div className="widget content-widget" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: 'calc(100% - 80px)', overflow: 'hidden' }}>
-        <div className="scroll-area" style={{ flex: 1, overflowY: 'auto', padding: '1.25rem' }}>
+      <div className="widget content-widget" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', marginTop: '1rem' }}>
+        <div className="scroll-area" style={{ flex: 1, overflowY: 'auto', padding: '1.25rem', scrollbarWidth: 'thin' }}>
 
           <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
             <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
@@ -128,6 +130,8 @@ const UserSidebar = ({
               )}
               {filteredNotifications.map(n => (
                 <motion.div 
+                  whileHover={{ scale: 1.02, x: 5 }}
+                  onClick={() => setSelectedNotif(n)}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   key={n.id} 
@@ -135,7 +139,8 @@ const UserSidebar = ({
                     padding: '1rem', background: 'rgba(255,255,255,0.98)', 
                     border: '1px solid var(--glass-border)', borderRadius: '12px',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
-                    borderLeft: `4px solid ${n.policy_title?.includes('RESOLVED') ? 'var(--success)' : 'var(--accent)'}`
+                    borderLeft: `4px solid ${n.policy_title?.includes('RESOLVED') ? 'var(--success)' : 'var(--accent)'}`,
+                    cursor: 'pointer'
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem' }}>
@@ -148,12 +153,108 @@ const UserSidebar = ({
                       <TrendingUp size={10} color="var(--success)" />
                       <span style={{ fontSize: '0.5rem', fontWeight: 900, color: 'var(--success)' }}>{n.prediction || 'AI_SAFE'}</span>
                     </div>
+                    <span style={{ fontSize: '0.45rem', fontWeight: 800, color: 'var(--accent)' }}>VIEW_DETAILS →</span>
                   </div>
                 </motion.div>
               ))}
             </div>
           </div>
           )}
+
+          {/* DETAILED NOTIFICATION OVERLAY */}
+          <AnimatePresence>
+            {selectedNotif && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                style={{ 
+                  position: 'absolute', top: '10%', left: '5%', right: '5%', bottom: '10%',
+                  background: '#fff', borderRadius: '24px', zIndex: 2000,
+                  boxShadow: '0 30px 60px rgba(0,0,0,0.15)',
+                  padding: '2rem', display: 'flex', flexDirection: 'column',
+                  border: '1px solid var(--accent-glass)'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                  <div>
+                    <span style={{ fontSize: '0.6rem', fontWeight: 900, color: 'var(--accent)', letterSpacing: '2px' }}>POLICY_DOSSIER</span>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--text-primary)', marginTop: '0.25rem' }}>{selectedNotif.policy_title || selectedNotif.policy}</h3>
+                  </div>
+                  <button onClick={() => setSelectedNotif(null)} style={{ background: 'rgba(0,0,0,0.05)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <div className="scroll-area" style={{ flex: 1, overflowY: 'auto' }}>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '2rem' }}>
+                    {selectedNotif.purpose}
+                  </p>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
+                    <div style={{ padding: '1rem', background: 'rgba(37,99,235,0.03)', borderRadius: '12px', border: '1px solid rgba(37,99,235,0.05)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                        <Coins size={14} color="var(--accent)" />
+                        <span style={{ fontSize: '0.6rem', fontWeight: 900, color: 'var(--text-secondary)' }}>BUDGET_ALLOCATION</span>
+                      </div>
+                      <span style={{ fontSize: '1rem', fontWeight: 900, color: 'var(--text-primary)' }}>{selectedNotif.budget || '₹1,200 Cr'}</span>
+                    </div>
+                    <div style={{ padding: '1rem', background: 'rgba(37,99,235,0.03)', borderRadius: '12px', border: '1px solid rgba(37,99,235,0.05)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                        <Clock size={14} color="var(--accent)" />
+                        <span style={{ fontSize: '0.6rem', fontWeight: 900, color: 'var(--text-secondary)' }}>IMPLEMENTATION_TIME</span>
+                      </div>
+                      <span style={{ fontSize: '1rem', fontWeight: 900, color: 'var(--text-primary)' }}>{selectedNotif.duration || '24 MONTHS'}</span>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem', background: '#f8fafc', borderRadius: '12px' }}>
+                      <MapPin size={18} color="var(--accent)" />
+                      <div>
+                        <span style={{ fontSize: '0.55rem', fontWeight: 800, color: '#94a3b8', display: 'block' }}>PRIMARY_LOCATION</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-primary)' }}>{selectedNotif.location || 'Multiple Zones'}</span>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.75rem', background: '#f8fafc', borderRadius: '12px' }}>
+                      <User size={18} color="var(--accent)" />
+                      <div>
+                        <span style={{ fontSize: '0.55rem', fontWeight: 800, color: '#94a3b8', display: 'block' }}>OFFICER_IN_CHARGE</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-primary)' }}>{selectedNotif.incharge || 'Dept. of Infrastructure'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {selectedNotif.pdf_url && (
+                    <div style={{ marginTop: '2rem' }}>
+                      <span style={{ fontSize: '0.6rem', fontWeight: 900, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.75rem' }}>DOCUMENTATION_ATTACHED</span>
+                      <div style={{ 
+                        display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', 
+                        background: '#fff', border: '2px dashed var(--glass-border)', borderRadius: '16px',
+                        cursor: 'pointer'
+                      }}>
+                        <FileText size={24} color="#ef4444" />
+                        <div style={{ flex: 1 }}>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 900, color: 'var(--text-primary)', display: 'block' }}>POLICY_WHITE_PAPER.pdf</span>
+                          <span style={{ fontSize: '0.6rem', color: 'var(--text-secondary)' }}>2.4 MB • PDF Document</span>
+                        </div>
+                        <span style={{ fontSize: '0.6rem', fontWeight: 900, color: 'var(--accent)' }}>DOWNLOAD</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
+                  <button style={{ flex: 1, padding: '1rem', borderRadius: '12px', border: 'none', background: 'var(--accent)', color: '#fff', fontSize: '0.75rem', fontWeight: 900, cursor: 'pointer' }}>
+                    SUPPORT POLICY
+                  </button>
+                  <button style={{ flex: 1, padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#fff', color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 900, cursor: 'pointer' }}>
+                    REQUEST CLARIFICATION
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {currentTab === 'complaints' && (
           <>

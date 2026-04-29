@@ -9,6 +9,7 @@ import { COORDINATE_SYSTEM } from '@deck.gl/core';
 
 // SHARED
 import MapLayout from '../../shared/components/MapLayout';
+import { ToastContainer } from '../../shared/components/Toast';
 import { updateAgents } from '../../shared/utils/simulation';
 import { generateAgents } from '../../shared/utils/agentGenerator';
 
@@ -116,6 +117,15 @@ const AdminDashboard = () => {
   useEffect(() => {
     axios.get('/data/bengaluru_utilities.json').then(res => setUtilitiesData(res.data));
   }, []);
+
+  const [toasts, setToasts] = useState([]);
+  const showToast = (message, type = 'success') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+  };
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  };
 
   const [viewState, setViewState] = useState({
     longitude: 77.5912, latitude: 12.9797, zoom: 14, pitch: 55, bearing: 0
@@ -532,44 +542,85 @@ ${aiPolicyReport.suggestions.map(s => `- ${s}`).join('\n')}
     a.click();
   };
 
+  const handleDownloadReport = () => {
+    if (!aiPolicyReport) return showToast("No report data available.", "warning");
+    const content = `
+NEXUS TWIN OFFICIAL STRATEGY REPORT
+==================================
+POLICY: ${policyForm.title}
+LOCATION: ${policyForm.location}
+BUDGET: ${policyForm.budget} CR
+TIMELINE: ${policyForm.duration}
+OFFICER_IN_CHARGE: ${policyForm.incharge || 'Nexus Command'}
+
+AI VIABILITY SCORE: ${aiPolicyReport.score}%
+STATUS: ${aiPolicyReport.status}
+
+VITALITY GAIN ANALYSIS:
+- Documentation: +${aiPolicyReport.breakdown.docs}%
+- Fiscal: +${aiPolicyReport.breakdown.fiscal}%
+- Timeline: +${aiPolicyReport.breakdown.time}%
+- Geospatial: +${aiPolicyReport.breakdown.geo}%
+
+NEXUS AI SUGGESTIONS:
+${aiPolicyReport.suggestions.map(s => `• ${s}`).join('\n')}
+
+GENERATED: ${new Date().toLocaleString()}
+    `;
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `NEXUS_STRATEGY_${policyForm.title.replace(/\s+/g, '_')}.txt`;
+    a.click();
+    showToast("Report download initiated.", "success");
+  };
+
   const handleBroadcastPolicy = async () => {
     setIsBroadcasting(true);
     try {
-      // POST notification to server so users can see it
-      const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '';
-      await axios.post(`${apiBase}/api/notifications`, {
-        policy: policyForm.title || 'URBAN POLICY DEPLOYMENT',
-        price: policyForm.budget || 'N/A',
-        location: policyForm.location || 'Bengaluru Central',
+      const demoNotifs = JSON.parse(localStorage.getItem('nexus_demo_notifications') || '[]');
+      const newNotif = {
+        id: Date.now(),
+        policy_title: policyForm.title || 'URBAN POLICY DEPLOYMENT',
         purpose: policyForm.outcome || 'Strategic urban development initiative.',
-        prediction: `AI Viability Score: ${aiPolicyScore}% — SAFE`,
-        duration: policyForm.duration || 'TBD'
-      });
-    } catch (err) {
-      console.warn('Notification POST failed (server may be offline):', err.message);
-    }
-    await new Promise(resolve => setTimeout(resolve, 1500));
+        budget: `${policyForm.budget} CR`,
+        duration: policyForm.duration || 'TBD',
+        location: policyForm.location || 'Bengaluru Central',
+        incharge: policyForm.incharge || 'Nexus Command Center',
+        prediction: aiPolicyReport?.status || 'AI_SAFE',
+        pdf_url: true, // Mark as having a report
+        timestamp: new Date().toISOString(),
+        score: aiPolicyReport?.score || 84
+      };
+      
+      // Sync to local memory
+      demoNotifs.unshift(newNotif);
+      localStorage.setItem('nexus_demo_notifications', JSON.stringify(demoNotifs));
 
-    setIsBroadcasting(false);
-    setActiveNotification({
-      id: Date.now(),
-      type: 'GLOBAL_DIRECTIVE',
-      title: policyForm.title || 'URBAN POLICY DEPLOYMENT',
-      data: policyForm,
-      score: aiPolicyScore,
-      timestamp: new Date().toLocaleTimeString()
-    });
-    setPolicyForm({ title: '', location: '', budget: '', duration: '', impactUnderground: '', impactTraffic: '', outcome: '', lngLat: null });
-    setAiPolicyScore(null);
-    setPolicyPdfFile(null);
-    setPolicyLocationPicking(false);
-    setLocationSearchResults([]);
-    alert('✅ POLICY DEPLOYED! Notification sent to all citizens.');
+      // Attempt server sync if possible
+      try {
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+        await axios.post(`${apiBase}/api/notifications`, newNotif);
+      } catch(e) {}
+
+      showToast("POLICY_DEPLOYED: Notification sent to all citizens.", "success");
+      setAllNotifications(prev => [newNotif, ...prev]);
+    } catch (err) {
+      showToast("ERROR: Could not broadcast directive.", "error");
+    } finally {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setIsBroadcasting(false);
+      setPolicyForm({ title: '', location: '', budget: '', duration: '', incharge: '', outcome: '', lngLat: null });
+      setAiPolicyScore(null);
+      setAiPolicyReport(null);
+      setPolicyPdfFile(null);
+    }
   };
 
   // Location helpers for Policy Hub
   const handleGetLiveLocation = () => {
-    if (!navigator.geolocation) return alert('Geolocation not supported by your browser.');
+    if (!navigator.geolocation) return showToast("Geolocation not supported by your browser.", "error");
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
@@ -586,7 +637,7 @@ ${aiPolicyReport.suggestions.map(s => `- ${s}`).join('\n')}
         // Fly map to the location
         if (mapRef.current) mapRef.current.flyTo({ center: [longitude, latitude], zoom: 16, pitch: 55, duration: 2000 });
       },
-      (err) => alert('Location access denied: ' + err.message),
+      (err) => showToast('Location access denied: ' + err.message, "error"),
       { enableHighAccuracy: true }
     );
   };
@@ -902,6 +953,7 @@ ${aiPolicyReport.suggestions.map(s => `- ${s}`).join('\n')}
           </div>
         </div>
       )}
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
 };

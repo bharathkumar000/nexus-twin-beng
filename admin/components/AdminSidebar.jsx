@@ -141,8 +141,8 @@ const AdminSidebar = ({
         </div>
       </div>
 
-      <div className="widget content-widget" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', borderLeft: '1px solid var(--accent-glass)' }}>
-        <div className="scroll-area" style={{ flex: 1, padding: '1rem' }}>
+      <div className="widget content-widget" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', borderLeft: '1px solid var(--accent-glass)', marginTop: '0.5rem' }}>
+        <div className="scroll-area" style={{ flex: 1, overflowY: 'auto', padding: '1rem', scrollbarWidth: 'thin' }}>
           
           {!activeCategory && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', opacity: 0.5, textAlign: 'center' }}>
@@ -601,10 +601,10 @@ const AdminSidebar = ({
                   </div>
 
                   {/* BUDGET & TIMELINE */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.2rem', marginBottom: '1rem' }}>
                     <div>
                       <label style={{ fontSize: '0.55rem', fontWeight: 900, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>BUDGET (₹)</label>
-                      <div style={{ display: 'flex', gap: '4px' }}>
+                      <div style={{ display: 'flex', gap: '2px' }}>
                         <input 
                           type="number"
                           className="search-field" 
@@ -618,9 +618,9 @@ const AdminSidebar = ({
                           value={policyForm.budgetUnit}
                           onChange={e => setPolicyForm({...policyForm, budgetUnit: e.target.value})}
                           style={{ 
-                            width: '65px', 
-                            padding: '0 4px', 
-                            fontSize: '0.7rem', 
+                            width: '40px', 
+                            padding: '0 2px', 
+                            fontSize: '0.65rem', 
                             fontWeight: 900, 
                             background: 'transparent', 
                             border: 'none', 
@@ -637,7 +637,7 @@ const AdminSidebar = ({
                     </div>
                     <div>
                       <label style={{ fontSize: '0.55rem', fontWeight: 900, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>TIMELINE</label>
-                      <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-end' }}>
+                      <div style={{ display: 'flex', gap: '2px', alignItems: 'flex-end' }}>
                         <input 
                           type="number"
                           className="search-field" 
@@ -651,9 +651,9 @@ const AdminSidebar = ({
                           value={policyForm.durationUnit || 'Months'}
                           onChange={e => setPolicyForm({...policyForm, durationUnit: e.target.value})}
                           style={{ 
-                            width: '75px', 
-                            padding: '0 4px', 
-                            fontSize: '0.7rem', 
+                            width: '56px', 
+                            padding: '0 2px', 
+                            fontSize: '0.65rem', 
                             fontWeight: 900, 
                             background: 'transparent', 
                             border: 'none', 

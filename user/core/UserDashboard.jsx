@@ -8,6 +8,7 @@ import { TripsLayer } from '@deck.gl/geo-layers';
 
 // SHARED
 import MapLayout from '../../shared/components/MapLayout';
+import { ToastContainer } from '../../shared/components/Toast';
 import { updateAgents } from '../../shared/utils/simulation';
 import { generateAgents } from '../../shared/utils/agentGenerator';
 
@@ -46,6 +47,15 @@ const UserDashboard = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
   const [allNotifications, setAllNotifications] = useState([]);
 
+  const [toasts, setToasts] = useState([]);
+  const showToast = (message, type = 'success') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+  };
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  };
+
   const [viewState, setViewState] = useState({
     longitude: 77.5912, latitude: 12.9797, zoom: 14, pitch: 55, bearing: 0
   });
@@ -53,17 +63,22 @@ const UserDashboard = () => {
 
   const onWebGLInitialized = (gl) => { setGlContext(gl); setGraphicsReady(true); };
 
-  const fetchRequests = async () => {
+    const fetchRequests = async () => {
       try {
         const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '';
         const res = await axios.get(`${apiBase}/api/complaints`);
         setPublicRequests(res.data);
       } catch (err) { 
         console.warn("Nexus Command Core offline. Using local simulation for complaints.");
-        setPublicRequests([
-          { id: 'm1', demand: 'Pothole Alert', status: 'pending', location: 'Silk Board', upvotes: 45, timestamp: new Date().toISOString(), lngLat: { lng: 77.6226, lat: 12.9177 } },
-          { id: 'm2', demand: 'Water Main Burst', status: 'pending', location: 'Whitefield', upvotes: 22, timestamp: new Date().toISOString(), lngLat: { lng: 77.7500, lat: 12.9698 } }
-        ]);
+        let localData = JSON.parse(localStorage.getItem('nexus_demo_complaints') || '[]');
+        if (localData.length === 0) {
+          localData = [
+            { id: 'm1', demand: 'Pothole Alert', status: 'pending', location: 'Silk Board', upvotes: 45, timestamp: new Date().toISOString(), lngLat: { lng: 77.6226, lat: 12.9177 }, type: 'Urban Infrastructure Damage' },
+            { id: 'm2', demand: 'Water Main Burst', status: 'pending', location: 'Whitefield', upvotes: 22, timestamp: new Date().toISOString(), lngLat: { lng: 77.7500, lat: 12.9698 }, type: 'Water Supply Failure' }
+          ];
+          localStorage.setItem('nexus_demo_complaints', JSON.stringify(localData));
+        }
+        setPublicRequests(localData.sort((a,b) => b.upvotes - a.upvotes));
       }
     };
 
@@ -88,17 +103,50 @@ const UserDashboard = () => {
         }
       } catch (err) { 
         console.warn("Nexus Command Core offline. Using local simulation for notifications.");
-        const mockNotif = {
-          id: 'n1',
-          policy: 'METRO_PHASE_4_APPROVED',
-          purpose: 'New metro connectivity approved for Outer Ring Road zones.',
-          prediction: 'AI_SAFE',
-          duration: '5 YEARS',
-          timestamp: new Date().toLocaleTimeString()
-        };
-        setAllNotifications([mockNotif]);
-        if (!latestNotif) {
-          setLatestNotif(mockNotif);
+        let localNotifs = JSON.parse(localStorage.getItem('nexus_demo_notifications') || '[]');
+        if (localNotifs.length === 0) {
+          localNotifs = [
+            { 
+              id: 'n1', 
+              policy_title: 'NEXUS_GREEN_INITIATIVE: Cubbon Park Expansion', 
+              purpose: 'Implementing a 50-acre vertical greenery system in the administrative core to reduce urban heat island effects.',
+              budget: '₹250 Cr',
+              duration: '12 MONTHS',
+              location: 'Cubbon Park Zone',
+              incharge: 'Dept. of Urban Forestry',
+              prediction: 'AI_STABLE',
+              pdf_url: true,
+              timestamp: new Date().toISOString()
+            },
+            { 
+              id: 'n2', 
+              policy_title: 'INFRA_UPGRADE: Metro Line 4 Connectivity', 
+              purpose: 'Structural reinforcement and real-time transit synchronization for the Electronic City corridor.',
+              budget: '₹1,800 Cr',
+              duration: '24 MONTHS',
+              location: 'Electronic City Phase 1',
+              incharge: 'BMRCL Nexus Team',
+              prediction: 'HIGH_IMPACT',
+              pdf_url: true,
+              timestamp: new Date().toISOString()
+            },
+            { 
+              id: 'n3', 
+              policy_title: 'RESOLVED: MG Road Drainage Failure', 
+              purpose: 'Automated pressure sensors have detected successful flow restoration across the MG Road utility grid.',
+              budget: '₹45 Cr',
+              duration: 'COMPLETED',
+              location: 'MG Road',
+              incharge: 'BWSSB Command',
+              prediction: 'OPTIMIZED',
+              timestamp: new Date().toISOString()
+            }
+          ];
+          localStorage.setItem('nexus_demo_notifications', JSON.stringify(localNotifs));
+        }
+        setAllNotifications(localNotifs);
+        if (localNotifs[0].id !== latestNotif?.id) {
+          setLatestNotif(localNotifs[0]);
           setShowNotifBar(true);
         }
       }
@@ -153,13 +201,28 @@ const UserDashboard = () => {
         lngLat: complaintForm.lngLat
       });
       if (res.data.success) {
-        alert("COMPLAINT_FILED: Nexus Twin Command notified.");
-        fetchRequests(); // Refresh the list immediately
+        showToast("COMPLAINT_FILED: Nexus Twin Command notified.", "success");
+        fetchRequests(); 
         return true;
       }
     } catch (err) {
-      console.error(err);
-      alert("ERROR: Could not establish link to Command Core.");
+      console.warn("Offline filing. Storing in local memory.");
+      const demoComplaints = JSON.parse(localStorage.getItem('nexus_demo_complaints') || '[]');
+      demoComplaints.unshift({
+        id: Date.now(),
+        type: complaintForm.type,
+        demand: complaintForm.type, // Legacy support
+        description: complaintForm.description,
+        location: complaintForm.location?.address || 'Geolocation Coordinates',
+        lngLat: complaintForm.location || { lng: 77.5912, lat: 12.9797 },
+        status: 'pending',
+        upvotes: 1,
+        timestamp: new Date().toISOString()
+      });
+      localStorage.setItem('nexus_demo_complaints', JSON.stringify(demoComplaints));
+      showToast("SUCCESS: Report stored in local Command Core.", "success");
+      fetchRequests();
+      return true;
     }
     return false;
   };
@@ -169,11 +232,14 @@ const UserDashboard = () => {
       const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '';
       const res = await axios.post(`${apiBase}/api/complaints/${id}/upvote`);
       if (res.data.success) {
-        fetchRequests(); // Refresh the list
+        fetchRequests(); 
       }
     } catch (err) {
-      console.error(err);
-      alert("ERROR: Upvote failed.");
+      console.warn("Offline upvote. Syncing local memory.");
+      const demoComplaints = JSON.parse(localStorage.getItem('nexus_demo_complaints') || '[]');
+      const updated = demoComplaints.map(c => c.id === id ? { ...c, upvotes: (c.upvotes || 0) + 1 } : c);
+      localStorage.setItem('nexus_demo_complaints', JSON.stringify(updated));
+      fetchRequests();
     }
   };
 
@@ -225,15 +291,19 @@ const UserDashboard = () => {
         myReports={publicRequests}
         handleUpvote={handleUpvote}
         activeTab={activeSidebarTab}
+        showToast={showToast}
       />
 
       <UserDock 
         activeTab={activeTab} setActiveTab={setActiveTab}
         currentStyle={currentStyle} setCurrentStyle={setCurrentStyle}
         handleLogout={handleLogout}
+        isSidebarCollapsed={isSidebarCollapsed}
         setIsSidebarCollapsed={setIsSidebarCollapsed}
+        activeSidebarTab={activeSidebarTab}
         setActiveSidebarTab={setActiveSidebarTab}
       />
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
 };
