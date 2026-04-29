@@ -14,11 +14,11 @@ const AdminSidebar = ({
   aiSuggestion, 
   timeHorizon, 
   setTimeHorizon, 
-  advisorLog,
+  advisorLog = [],
   advisorQuery,
   setAdvisorQuery,
   handleAskAdvisor,
-  policyForm,
+  policyForm = {},
   setPolicyForm,
   handleBroadcastPolicy,
   isBroadcasting,
@@ -49,7 +49,7 @@ const AdminSidebar = ({
   policyPdfFile,
   setPolicyPdfFile,
   handleGetLiveLocation,
-  locationSearchResults,
+  locationSearchResults = [],
   handleLocationSearch,
   handlePickLocation,
   mapRef,
@@ -429,13 +429,13 @@ const AdminSidebar = ({
                 <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
 
                   {/* POLICY TITLE */}
-                  <div>
+                  <div style={{ marginBottom: '1rem' }}>
                     <label style={{ fontSize: '0.55rem', fontWeight: 900, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem', letterSpacing: '0.5px' }}>POLICY_TITLE</label>
-                    <input className="search-field" placeholder="e.g., Underground Metro Line Extension" value={policyForm.title} onChange={e => setPolicyForm({...policyForm, title: e.target.value})} style={{ background: 'rgba(255,255,255,0.8)', width: '100%' }} />
+                    <input className="search-field" placeholder="e.g., Underground Metro Line Extension" value={policyForm.title} onChange={e => setPolicyForm({...policyForm, title: e.target.value})} style={{ width: '100%' }} />
                   </div>
 
                   {/* PDF UPLOAD */}
-                  <div>
+                  <div style={{ marginBottom: '1rem' }}>
                     <label style={{ fontSize: '0.55rem', fontWeight: 900, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem', letterSpacing: '0.5px' }}>ATTACH_POLICY_DOCUMENT (PDF)</label>
                     <div 
                       style={{ 
@@ -469,10 +469,10 @@ const AdminSidebar = ({
                   </div>
 
                   {/* LOCATION SECTION */}
-                  <div>
+                  <div style={{ marginBottom: '1rem' }}>
                     <label style={{ fontSize: '0.55rem', fontWeight: 900, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem', letterSpacing: '0.5px' }}>TARGET_LOCATION</label>
                     <div style={{ display: 'flex', gap: '0.35rem', marginBottom: '0.35rem' }}>
-                      <input className="search-field" placeholder="Search or enter location..." value={policyForm.location} onChange={e => { setPolicyForm({...policyForm, location: e.target.value}); if (e.target.value.length > 2) handleLocationSearch(e.target.value); }} style={{ background: 'rgba(255,255,255,0.8)', flex: 1 }} />
+                      <input className="search-field" placeholder="Search or enter location..." value={policyForm.location} onChange={e => { setPolicyForm({...policyForm, location: e.target.value}); if (e.target.value.length > 2) handleLocationSearch(e.target.value); }} style={{ flex: 1 }} />
                       <button 
                         title="Use Live GPS Location" 
                         onClick={() => handleAction(handleGetLiveLocation)}
@@ -520,40 +520,40 @@ const AdminSidebar = ({
                   </div>
 
                   {/* BUDGET & TIMELINE */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
                     <div>
                       <label style={{ fontSize: '0.55rem', fontWeight: 900, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>BUDGET (₹)</label>
-                      <input className="search-field" placeholder="e.g., ₹120 Crores" value={policyForm.budget} onChange={e => setPolicyForm({...policyForm, budget: e.target.value})} style={{ background: 'rgba(255,255,255,0.8)', width: '100%' }} />
+                      <input className="search-field" placeholder="e.g., ₹120 Crores" value={policyForm.budget} onChange={e => setPolicyForm({...policyForm, budget: e.target.value})} style={{ width: '100%' }} />
                     </div>
                     <div>
                       <label style={{ fontSize: '0.55rem', fontWeight: 900, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>TIMELINE</label>
-                      <input className="search-field" placeholder="e.g., 18 Months" value={policyForm.duration} onChange={e => setPolicyForm({...policyForm, duration: e.target.value})} style={{ background: 'rgba(255,255,255,0.8)', width: '100%' }} />
+                      <input className="search-field" placeholder="e.g., 18 Months" value={policyForm.duration} onChange={e => setPolicyForm({...policyForm, duration: e.target.value})} style={{ width: '100%' }} />
                     </div>
                   </div>
 
                   {/* IMPACT PROJECTIONS */}
-                  <div className="widget" style={{ padding: '0.75rem', background: 'rgba(37,99,235,0.04)', border: '1px solid rgba(37,99,235,0.15)' }}>
+                  <div className="widget" style={{ padding: '0.75rem', background: 'rgba(37,99,235,0.04)', border: '1px solid rgba(37,99,235,0.15)', marginBottom: '1rem' }}>
                     <span className="section-label" style={{ fontSize: '0.55rem', color: 'var(--accent)', marginBottom: '0.5rem', display: 'block' }}>IMPACT_PROJECTIONS</span>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                       <div>
                         <label style={{ fontSize: '0.5rem', fontWeight: 800, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.15rem' }}>TRAFFIC DISRUPTION</label>
-                        <input className="search-field" placeholder="e.g., 30% increase for 6 months" value={policyForm.impactTraffic} onChange={e => setPolicyForm({...policyForm, impactTraffic: e.target.value})} style={{ background: 'rgba(255,255,255,0.8)', width: '100%' }} />
+                        <input className="search-field" placeholder="e.g., 30% increase for 6 months" value={policyForm.impactTraffic} onChange={e => setPolicyForm({...policyForm, impactTraffic: e.target.value})} style={{ width: '100%' }} />
                       </div>
                       <div>
                         <label style={{ fontSize: '0.5rem', fontWeight: 800, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.15rem' }}>UNDERGROUND UTILITIES RISK</label>
-                        <input className="search-field" placeholder="e.g., Water main rerouting needed" value={policyForm.impactUnderground} onChange={e => setPolicyForm({...policyForm, impactUnderground: e.target.value})} style={{ background: 'rgba(255,255,255,0.8)', width: '100%' }} />
+                        <input className="search-field" placeholder="e.g., Water main rerouting needed" value={policyForm.impactUnderground} onChange={e => setPolicyForm({...policyForm, impactUnderground: e.target.value})} style={{ width: '100%' }} />
                       </div>
                     </div>
                   </div>
 
                   {/* EXPECTED OUTCOME */}
-                  <div>
+                  <div style={{ marginBottom: '1.25rem' }}>
                     <label style={{ fontSize: '0.55rem', fontWeight: 900, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>EXPECTED_OUTCOME & ROI</label>
-                    <textarea className="search-field" placeholder="Describe the projected benefits, revenue impact, and citizen welfare outcome..." value={policyForm.outcome} onChange={e => setPolicyForm({...policyForm, outcome: e.target.value})} style={{ background: 'rgba(255,255,255,0.8)', minHeight: '70px', resize: 'vertical', width: '100%' }} />
+                    <textarea className="search-field" placeholder="Describe projected benefits..." value={policyForm.outcome} onChange={e => setPolicyForm({...policyForm, outcome: e.target.value})} style={{ minHeight: '60px', resize: 'vertical', width: '100%' }} />
                   </div>
 
                   {/* ANALYZE BUTTON */}
-                  <div>
+                  <div style={{ marginBottom: '1.5rem' }}>
                     <button className="action-btn" onClick={() => handleAction(handleAnalyzePolicy)} disabled={isAnalyzingPolicy} style={{ width: '100%', background: 'var(--accent)', color: '#fff', fontWeight: 800 }}>
                       {isAnalyzingPolicy ? <><Loader2 className="spin" size={16} /> ANALYZING...</> : '🧠 ANALYZE POLICY (GEMMA_AI)'}
                     </button>

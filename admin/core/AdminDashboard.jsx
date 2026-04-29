@@ -689,7 +689,6 @@ ${aiPolicyReport.suggestions.map(s => `- ${s}`).join('\n')}
         customHeight={customHeight}
         setCustomHeight={setCustomHeight}
         transportStep={transportStep}
-        handleApplyAssetToSelected={handleApplyAssetToSelected}
       />
 
       <AdminDock 

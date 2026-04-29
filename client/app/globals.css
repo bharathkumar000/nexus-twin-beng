@@ -385,9 +385,23 @@ body {
   background: transparent;
   border: none;
   outline: none;
-  color: #fff;
+  color: var(--text-primary);
   font-size: 0.9rem;
-  margin-left: 0.75rem;
+  padding: 8px 0;
+}
+
+.search-field::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+.side-panel .search-field {
+  border-bottom: 1px solid var(--glass-border);
+  transition: border-color 0.3s;
+}
+
+.side-panel .search-field:focus {
+  border-bottom-color: var(--accent);
 }
 
 .view-actions {
