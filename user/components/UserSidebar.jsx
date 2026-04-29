@@ -1,4 +1,4 @@
-import { MapPin, Camera, MessageSquare, AlertCircle, Bell, TrendingUp, RefreshCw, X, ShieldAlert, Globe } from 'lucide-react';
+import { MapPin, Camera, MessageSquare, AlertCircle, Bell, TrendingUp, RefreshCw, X, ShieldAlert, Globe, CheckCircle2, Clock, ArrowUpCircle } from 'lucide-react';
 import React, { useState, useRef } from 'react';
 import { Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -7,7 +7,9 @@ const UserSidebar = ({
   isSidebarCollapsed = false,
   setIsSidebarCollapsed = () => {},
   handleFileComplaint = async () => {},
-  notifications = []
+  notifications = [],
+  myReports = [],
+  handleUpvote = () => {}
 }) => {
   const [complaintForm, setComplaintForm] = useState({ 
     type: 'Water Supply', 
@@ -201,6 +203,76 @@ const UserSidebar = ({
               >
                 {isSubmitting ? <Loader2 className="spin" size={16} /> : <><AlertCircle size={16} /> BROADCAST_REPORT</>}
               </button>
+            </div>
+          </div>
+
+          <div className="panel-section" style={{ marginBottom: '2rem' }}>
+            <span className="section-label" style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: 900, fontSize: '0.6rem', letterSpacing: '1px' }}>
+              <CheckCircle2 size={14} strokeWidth={2.5} /> PUBLIC_REPORTS_&_UPVOTING
+            </span>
+            <div style={{ marginTop: '1rem', maxHeight: '300px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingRight: '0.5rem' }} className="scroll-area">
+              {myReports.length === 0 && (
+                <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.4 }}>
+                  <MessageSquare size={24} style={{ marginBottom: '0.5rem' }} />
+                  <p style={{ fontSize: '0.6rem', fontWeight: 800 }}>NO_REPORTS_FILED</p>
+                </div>
+              )}
+              {myReports.map(report => (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  key={report.id} 
+                  style={{ 
+                    padding: '1rem', background: 'rgba(255,255,255,0.98)', 
+                    border: '1px solid var(--glass-border)', borderRadius: '12px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
+                    borderLeft: `4px solid ${report.status === 'resolved' ? 'var(--success)' : 'var(--warning, #f59e0b)'}`
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1.2, flex: 1 }}>{report.type}</span>
+                    <span style={{ 
+                      fontSize: '0.5rem', 
+                      fontWeight: 900, 
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      background: report.status === 'resolved' ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)',
+                      color: report.status === 'resolved' ? 'var(--success)' : '#f59e0b',
+                      whiteSpace: 'nowrap' 
+                    }}>
+                      {report.status.toUpperCase()}
+                    </span>
+                  </div>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--text-secondary)' }}>
+                    <MapPin size={10} />
+                    <span style={{ fontSize: '0.55rem', fontWeight: 700 }}>{report.location}</span>
+                  </div>
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--text-secondary)' }}>
+                      <Clock size={10} />
+                      <span style={{ fontSize: '0.55rem', fontWeight: 700 }}>{new Date(report.timestamp).toLocaleString()}</span>
+                    </div>
+
+                    {report.status !== 'resolved' && (
+                      <button 
+                        onClick={() => handleUpvote(report.id)}
+                        style={{ 
+                          display: 'flex', alignItems: 'center', gap: '0.3rem',
+                          background: 'rgba(37,99,235,0.1)', color: 'var(--accent)',
+                          border: '1px solid rgba(37,99,235,0.2)', borderRadius: '8px',
+                          padding: '0.35rem 0.6rem', fontSize: '0.6rem', fontWeight: 800,
+                          cursor: 'pointer', transition: 'background 0.2s'
+                        }}
+                      >
+                        <ArrowUpCircle size={14} />
+                        <span>{report.upvotes || 1}</span>
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </div>
 

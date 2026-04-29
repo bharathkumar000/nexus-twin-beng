@@ -171,42 +171,48 @@ const AdminSidebar = ({
                       <tr style={{ background: 'var(--accent)', color: '#fff' }}>
                         <th style={{ padding: '0.5rem 0.6rem', textAlign: 'left', fontWeight: 800, letterSpacing: '0.5px' }}>#</th>
                         <th style={{ padding: '0.5rem 0.6rem', textAlign: 'left', fontWeight: 800, letterSpacing: '0.5px' }}>DEMAND</th>
-                        <th style={{ padding: '0.5rem 0.6rem', textAlign: 'center', fontWeight: 800, letterSpacing: '0.5px' }}>URGENCY</th>
+                        <th style={{ padding: '0.5rem 0.6rem', textAlign: 'center', fontWeight: 800, letterSpacing: '0.5px' }}>VOTES</th>
+                        <th style={{ padding: '0.5rem 0.6rem', textAlign: 'center', fontWeight: 800, letterSpacing: '0.5px' }}>STATUS</th>
                         <th style={{ padding: '0.5rem 0.6rem', textAlign: 'center', fontWeight: 800, letterSpacing: '0.5px' }}>SOURCE</th>
-                        <th style={{ padding: '0.5rem 0.6rem', textAlign: 'right', fontWeight: 800, letterSpacing: '0.5px' }}>AFFECTED</th>
+                        <th style={{ padding: '0.5rem 0.6rem', textAlign: 'right', fontWeight: 800, letterSpacing: '0.5px' }}>ACTION</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {[
-                        { rank: 1, demand: 'Road & Pothole Repair', urgency: 'CRITICAL', urgencyColor: '#ef4444', source: '📋 Reports + 📱 Social', affected: '~1.2L citizens', bg: 'rgba(239,68,68,0.04)' },
-                        { rank: 2, demand: 'Affordable Housing', urgency: 'CRITICAL', urgencyColor: '#ef4444', source: '📱 Social + 👮 Officers', affected: '~90K families', bg: 'rgba(239,68,68,0.04)' },
-                        { rank: 3, demand: 'Traffic Signal Modernization', urgency: 'HIGH', urgencyColor: '#f59e0b', source: '📋 Reports + 👮 Officers', affected: '~85K commuters', bg: 'rgba(245,158,11,0.04)' },
-                        { rank: 4, demand: 'Stormwater Drain Expansion', urgency: 'HIGH', urgencyColor: '#f59e0b', source: '🤖 AI Predict + 👮 Officers', affected: '~2.1L residents', bg: 'rgba(245,158,11,0.04)' },
-                        { rank: 5, demand: 'Public Healthcare Access', urgency: 'HIGH', urgencyColor: '#f59e0b', source: '👮 Officers + 🤖 AI', affected: '~4.2L citizens', bg: 'rgba(245,158,11,0.04)' },
-                        { rank: 6, demand: 'Water Supply Reliability', urgency: 'HIGH', urgencyColor: '#f59e0b', source: '📋 Reports + 👮 Officers', affected: '~1.5L households', bg: 'rgba(245,158,11,0.04)' },
-                        { rank: 7, demand: 'Public Transit Coverage', urgency: 'MEDIUM', urgencyColor: '#2563eb', source: '📱 Social + 📋 Reports', affected: '~3.5L daily', bg: 'rgba(37,99,235,0.03)' },
-                        { rank: 8, demand: 'Streetlight Installation', urgency: 'MEDIUM', urgencyColor: '#2563eb', source: '📋 Reports + 👮 Officers', affected: '~60K residents', bg: 'rgba(37,99,235,0.03)' },
-                        { rank: 9, demand: 'Garbage Collection Frequency', urgency: 'MEDIUM', urgencyColor: '#2563eb', source: '📱 Social + 📋 Reports', affected: '~1.8L households', bg: 'rgba(37,99,235,0.03)' },
-                        { rank: 10, demand: 'Park & Green Space Development', urgency: 'LOW', urgencyColor: '#10b981', source: '📱 Social + 🤖 AI', affected: '~2.5L residents', bg: 'rgba(16,185,129,0.04)' },
-                      ].map(row => (
-                        <tr key={row.rank} style={{ background: row.bg, borderBottom: '1px solid var(--glass-border)', transition: 'background 0.15s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(37,99,235,0.08)'} onMouseLeave={e => e.currentTarget.style.background = row.bg}>
-                          <td style={{ padding: '0.55rem 0.6rem', fontWeight: 900, color: 'var(--accent)' }}>{row.rank}</td>
-                          <td style={{ padding: '0.55rem 0.6rem', fontWeight: 700, color: 'var(--text-primary)' }}>{row.demand}</td>
-                          <td style={{ padding: '0.55rem 0.6rem', textAlign: 'center' }}>
-                            <span style={{ 
-                              padding: '2px 6px', 
-                              borderRadius: '4px', 
-                              fontSize: '0.5rem', 
-                              fontWeight: 900, 
-                              color: '#fff', 
-                              background: row.urgencyColor,
-                              letterSpacing: '0.5px'
-                            }}>{row.urgency}</span>
-                          </td>
-                          <td style={{ padding: '0.55rem 0.6rem', textAlign: 'center', fontSize: '0.55rem', color: 'var(--text-secondary)' }}>{row.source}</td>
-                          <td style={{ padding: '0.55rem 0.6rem', textAlign: 'right', fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.55rem' }}>{row.affected}</td>
+                      {publicRequests && publicRequests.length > 0 ? (
+                        publicRequests.map((req, index) => (
+                          <tr key={req.id} style={{ background: req.status === 'resolved' ? 'rgba(16,185,129,0.04)' : 'rgba(239,68,68,0.04)', borderBottom: '1px solid var(--glass-border)', transition: 'background 0.15s' }}>
+                            <td style={{ padding: '0.55rem 0.6rem', fontWeight: 900, color: 'var(--accent)' }}>{index + 1}</td>
+                            <td style={{ padding: '0.55rem 0.6rem', fontWeight: 700, color: 'var(--text-primary)' }}>{req.type || req.demand}</td>
+                            <td style={{ padding: '0.55rem 0.6rem', textAlign: 'center', fontWeight: 900, color: 'var(--accent)' }}>{req.upvotes || 1}</td>
+                            <td style={{ padding: '0.55rem 0.6rem', textAlign: 'center' }}>
+                              <span style={{ 
+                                padding: '2px 6px', 
+                                borderRadius: '4px', 
+                                fontSize: '0.5rem', 
+                                fontWeight: 900, 
+                                color: '#fff', 
+                                background: req.status === 'resolved' ? '#10b981' : '#f59e0b',
+                                letterSpacing: '0.5px'
+                              }}>{req.status.toUpperCase()}</span>
+                            </td>
+                            <td style={{ padding: '0.55rem 0.6rem', textAlign: 'center', fontSize: '0.55rem', color: 'var(--text-secondary)' }}>{req.location || 'Bengaluru'}</td>
+                            <td style={{ padding: '0.55rem 0.6rem', textAlign: 'right' }}>
+                              {req.status !== 'resolved' && (
+                                <button 
+                                  onClick={() => handleResolveComplaint(req.id)}
+                                  style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: '4px', padding: '4px 8px', fontSize: '0.55rem', fontWeight: 800, cursor: 'pointer' }}
+                                >
+                                  RESOLVE
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="6" style={{ padding: '1rem', textAlign: 'center', fontSize: '0.65rem', color: 'var(--text-secondary)' }}>NO ACTIVE DEMANDS</td>
                         </tr>
-                      ))}
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -708,6 +714,30 @@ const AdminSidebar = ({
                         </div>
                       </div>
 
+                      {/* DOWNLOAD BUTTON - PROMINENT */}
+                      <button 
+                        onClick={handleDownloadReport} 
+                        style={{ 
+                          width: '100%', marginBottom: '1.25rem', 
+                          background: 'rgba(37,99,235,0.1)', color: 'var(--accent)', 
+                          border: '1px solid rgba(37,99,235,0.2)', borderRadius: '10px', 
+                          padding: '0.75rem', fontSize: '0.7rem', fontWeight: 900, 
+                          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                          transition: 'all 0.2s',
+                          boxShadow: '0 4px 12px rgba(37,99,235,0.05)'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(37,99,235,0.15)';
+                          e.currentTarget.style.transform = 'translateY(-1px)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'rgba(37,99,235,0.1)';
+                          e.currentTarget.style.transform = 'none';
+                        }}
+                      >
+                        <FileText size={16} /> DOWNLOAD_OFFICIAL_STRATEGY_REPORT (.TXT)
+                      </button>
+
                       {/* SCORE BREAKDOWN */}
                       <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.85rem', borderRadius: '10px', marginBottom: '1rem', border: '1px solid var(--glass-border)' }}>
                         <span style={{ fontSize: '0.55rem', color: 'var(--accent)', display: 'block', marginBottom: '0.6rem', fontWeight: 800 }}>VITALITY_GAIN_ANALYSIS</span>
@@ -745,33 +775,19 @@ const AdminSidebar = ({
                             </div>
                           ))}
                         </div>
-                        
-                        <button 
-                          onClick={handleDownloadReport} 
-                          style={{ 
-                            width: '100%', marginTop: '1rem', 
-                            background: 'rgba(255,255,255,0.05)', color: 'var(--accent)', 
-                            border: '1px solid var(--accent-glass)', borderRadius: '8px', 
-                            padding: '0.6rem', fontSize: '0.6rem', fontWeight: 900, 
-                            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(37,99,235,0.1)'}
-                          onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                        >
-                          <FileText size={14} /> DOWNLOAD FULL STRATEGY REPORT (.PDF)
-                        </button>
                       </div>
 
+                      {/* DEPLOY BUTTON */}
                       {aiPolicyScore >= 75 ? (
-                        <button className="action-btn" onClick={() => handleAction(handleBroadcastPolicy)} disabled={isBroadcasting} style={{ width: '100%', background: '#10b981', color: '#fff', fontWeight: 900, letterSpacing: '1px', fontSize: '0.75rem', height: '45px' }}>
+                        <button className="action-btn" onClick={() => handleAction(handleBroadcastPolicy)} disabled={isBroadcasting} style={{ width: '100%', background: '#10b981', color: '#fff', fontWeight: 900, letterSpacing: '1px', fontSize: '0.75rem', height: '45px', borderRadius: '12px', boxShadow: '0 10px 20px rgba(16,185,129,0.2)', marginBottom: '1rem' }}>
                           {isBroadcasting ? <><Loader2 className="spin" size={16} /> DEPLOYING...</> : '🚀 DEPLOY GLOBAL DIRECTIVE'}
                         </button>
                       ) : (
                         <div style={{ 
-                          width: '100%', padding: '0.85rem', borderRadius: '10px', 
+                          width: '100%', padding: '0.85rem', borderRadius: '12px', 
                           background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', opacity: 0.6
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', opacity: 0.6,
+                          marginBottom: '1rem'
                         }}>
                           <ShieldAlert size={14} color="#ef4444" />
                           <span style={{ fontSize: '0.6rem', fontWeight: 800, color: '#ef4444', letterSpacing: '0.5px' }}>IMPLEMENTATION_LOCKED (MIN. 75%)</span>

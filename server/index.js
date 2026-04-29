@@ -467,17 +467,29 @@ app.post('/api/complaints', upload.single('photo'), async (req, res) => {
   const coords = lngLat ? JSON.parse(lngLat) : { lng: 77.59, lat: 12.97 };
   
   const newComplaint = {
+    id: Date.now(),
     demand: type,
     urgency: 'MEDIUM',
     status: 'pending',
     source: location || 'Bengaluru',
     lng: coords.lng,
     lat: coords.lat,
-    affected_count: '1-10'
+    affected_count: '1-10',
+    timestamp: new Date().toISOString(),
+    upvotes: 1
   };
 
   try {
-    const { data, error } = await supabase.from('reports').insert([newComplaint]).select();
+    const { data, error } = await supabase.from('reports').insert([{
+      demand: newComplaint.demand,
+      urgency: newComplaint.urgency,
+      status: newComplaint.status,
+      source: newComplaint.source,
+      lng: newComplaint.lng,
+      lat: newComplaint.lat,
+      affected_count: newComplaint.affected_count,
+      upvotes: 1
+    }]).select();
     if (error) throw error;
 
     // Create a notification for the admin in Supabase
@@ -490,17 +502,19 @@ app.post('/api/complaints', upload.single('photo'), async (req, res) => {
       duration: 'URGENT'
     }]);
 
+    newComplaint.id = data[0].id;
+    complaints.unshift(newComplaint);
     res.json({ success: true, complaint: data[0] });
   } catch (err) {
-    console.error("Supabase Complaint Error:", err.message);
-    // Fallback for UI stability
-    res.json({ success: true, complaint: { ...newComplaint, id: Date.now() } });
+    console.warn("Supabase Complaint Error, using fallback:", err.message);
+    complaints.unshift(newComplaint);
+    res.json({ success: true, complaint: newComplaint });
   }
 });
 
 app.get('/api/complaints', async (req, res) => {
   try {
-    const { data, error } = await supabase.from('reports').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabase.from('reports').select('*').order('upvotes', { ascending: false });
     if (error) throw error;
     res.json(data.map(d => ({
       id: d.id,
@@ -508,15 +522,26 @@ app.get('/api/complaints', async (req, res) => {
       location: d.source,
       status: d.status,
       lngLat: { lng: d.lng, lat: d.lat },
-      timestamp: d.created_at
+      timestamp: d.created_at,
+      upvotes: d.upvotes || 1
     })));
   } catch (err) {
-    res.json([]);
+    // Fallback to memory
+    res.json(complaints.map(c => ({
+      id: c.id,
+      type: c.demand,
+      location: c.source,
+      status: c.status,
+      lngLat: { lng: c.lng, lat: c.lat },
+      timestamp: c.timestamp,
+      upvotes: c.upvotes || 1
+    })).sort((a, b) => b.upvotes - a.upvotes));
   }
 });
 
 app.post('/api/complaints/:id/resolve', async (req, res) => {
   const { id } = req.params;
+  
   try {
     const { data: complaint, error: fetchErr } = await supabase.from('reports').select('*').eq('id', id).single();
     if (fetchErr) throw fetchErr;
@@ -535,8 +560,55 @@ app.post('/api/complaints/:id/resolve', async (req, res) => {
     
     res.json({ success: true });
   } catch (err) {
-    console.error("Resolve Error:", err.message);
-    res.status(404).json({ error: 'Complaint not found or update failed' });
+    console.warn("Resolve Error (Supabase), trying memory fallback:", err.message);
+    
+    // In-memory fallback
+    const idx = complaints.findIndex(c => c.id == id);
+    if (idx !== -1) {
+      complaints[idx].status = 'resolved';
+      
+      const notif = {
+        id: Date.now(),
+        policy: `RESOLVED: ${complaints[idx].demand}`,
+        price: 'N/A',
+        location: complaints[idx].source,
+        purpose: `The reported issue has been successfully addressed by the Nexus Twin Command.`,
+        prediction: 'VITALITY_GAIN: +5%',
+        duration: 'COMPLETED',
+        timestamp: new Date().toISOString()
+      };
+      notifications.unshift(notif);
+      
+      return res.json({ success: true });
+    }
+    
+    res.status(404).json({ error: 'Complaint not found' });
+  }
+});
+
+app.post('/api/complaints/:id/upvote', async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Try Supabase first
+    const { data: complaint, error: fetchErr } = await supabase.from('reports').select('upvotes').eq('id', id).single();
+    if (fetchErr) throw fetchErr;
+    
+    const newVotes = (complaint.upvotes || 1) + 1;
+    await supabase.from('reports').update({ upvotes: newVotes }).eq('id', id);
+    
+    // Sync fallback array if possible
+    const idx = complaints.findIndex(c => c.id == id);
+    if (idx !== -1) complaints[idx].upvotes = newVotes;
+
+    res.json({ success: true, upvotes: newVotes });
+  } catch (err) {
+    console.warn("Upvote Error (Supabase), trying memory fallback:", err.message);
+    const idx = complaints.findIndex(c => c.id == id);
+    if (idx !== -1) {
+      complaints[idx].upvotes = (complaints[idx].upvotes || 1) + 1;
+      return res.json({ success: true, upvotes: complaints[idx].upvotes });
+    }
+    res.status(404).json({ error: 'Complaint not found' });
   }
 });
 

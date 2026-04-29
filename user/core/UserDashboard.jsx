@@ -52,14 +52,17 @@ const UserDashboard = () => {
 
   const onWebGLInitialized = (gl) => { setGlContext(gl); setGraphicsReady(true); };
 
+  const fetchRequests = async () => {
+    try {
+      const res = await axios.get('http://localhost:3001/api/complaints');
+      setPublicRequests(res.data);
+    } catch (err) { console.error("Request fetch failed", err); }
+  };
+
   useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        const res = await axios.get('http://localhost:3001/api/complaints');
-        setPublicRequests(res.data);
-      } catch (err) { console.error("Request fetch failed", err); }
-    };
     fetchRequests();
+    const interval = setInterval(fetchRequests, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -128,6 +131,7 @@ const UserDashboard = () => {
       });
       if (res.data.success) {
         alert("COMPLAINT_FILED: Nexus Twin Command notified.");
+        fetchRequests(); // Refresh the list immediately
         return true;
       }
     } catch (err) {
@@ -137,7 +141,19 @@ const UserDashboard = () => {
     return false;
   };
 
-  const handleLogout = () => { localStorage.clear(); router.push('/portal'); };
+  const handleUpvote = async (id) => {
+    try {
+      const res = await axios.post(`http://localhost:3001/api/complaints/${id}/upvote`);
+      if (res.data.success) {
+        fetchRequests(); // Refresh the list
+      }
+    } catch (err) {
+      console.error(err);
+      alert("ERROR: Upvote failed.");
+    }
+  };
+
+  const handleLogout = () => { localStorage.removeItem('auth_token'); router.push('/'); };
 
   return (
     <div className="app-root">
@@ -182,6 +198,8 @@ const UserDashboard = () => {
         setIsSidebarCollapsed={setIsSidebarCollapsed}
         handleFileComplaint={handleFileComplaint}
         notifications={allNotifications}
+        myReports={publicRequests}
+        handleUpvote={handleUpvote}
       />
 
       <UserDock 
