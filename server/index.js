@@ -145,22 +145,22 @@ app.post('/api/policy-advisor', async (req, res) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'gemma4:e4b',
-        prompt: `You are the "Nexus Twin Strategic Advisor", a high-fidelity AI specialized ONLY in urban planning, infrastructure, and fiscal policy for the Nexus Twin Digital Twin project.
+        model: 'gemma',
+        prompt: `You are the "Nexus Twin Strategic Advisor" (NEXUS_OS), a high-fidelity AI specialized ONLY in urban planning, infrastructure, and fiscal policy for the Bengaluru Digital Twin project.
         
-        STRICT RULES:
-        1. ONLY answer questions related to city management, urban planning, Bengaluru infrastructure, traffic, utilities, or policy simulation.
-        2. If a user asks anything unrelated (e.g., jokes, recipes, general knowledge not related to city planning, or personal questions), you MUST politely refuse.
-        3. Response: "I am authorized only to provide strategic counsel regarding the Nexus Twin urban infrastructure. Please submit a project-relevant query."
-        4. Keep your tone data-driven, tactical, and professional.
+        STRICT OPERATIONAL RULES:
+        1. SCOPE: ONLY answer questions related to city management, urban planning, Bengaluru infrastructure (Metro, Water, Traffic), utilities, or policy simulation.
+        2. RESTRICTION: If the user asks anything unrelated (jokes, recipes, general knowledge, or personal questions), you MUST politely refuse using the standard protocol.
+        3. STANDARD REFUSAL: "I am authorized only to provide strategic counsel regarding the Nexus Twin urban infrastructure. Please submit a project-relevant query."
+        4. TONE: Data-driven, tactical, professional, and concise. Use Markdown for formatting.
         
-        User Query: "${query}"
+        CURRENT_QUERY: "${query}"
         
-        If project-relevant, provide a professional report including:
-        1. STRATEGIC OVERVIEW
-        2. FISCAL IMPACT
-        3. SOCIAL METRICS
-        4. VERDICT`,
+        If project-relevant, provide a professional strategy report with these sections:
+        ### 📊 STRATEGIC OVERVIEW
+        ### 💰 FISCAL IMPACT ANALYSIS
+        ### 👥 SOCIAL & CITIZEN METRICS
+        ### ✅ OPERATIONAL VERDICT`,
         stream: false
       }),
       signal: controller.signal
@@ -210,10 +210,10 @@ app.post('/api/policy-advisor', async (req, res) => {
 
 #### 📊 INITIAL HEURISTICS
 - **Complexity Level**: Moderate
-- **Status**: Ollama Engine [gemma4:e4b] Offline.
+- **Status**: Ollama Engine [gemma] Offline.
 
 #### 🔍 ADVISORY NOTE
-The SYNTH-GOV engine requires the local Ollama service to be active for high-fidelity analysis. Please ensure "ollama run gemma4:e4b" is available.
+The SYNTH-GOV engine requires the local Ollama service to be active for high-fidelity analysis. Please ensure "ollama run gemma" is available on this machine.
     `;
   }
 
@@ -237,7 +237,7 @@ app.post('/api/parse-policy-document', upload.single('file'), async (req, res) =
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'gemma4:e4b',
+        model: 'gemma',
         prompt: `You are the Nexus Twin Document Parser. 
         Extract the following tactical details from the urban policy text below.
         

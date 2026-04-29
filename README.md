@@ -18,7 +18,7 @@ The project follows a **Domain-Driven Modular** structure, separating the platfo
 | **Database** | **Supabase / PostGIS** | Managed cloud storage for city assets and geospatial analysis. |
 | **Frontend** | **Next.js 16 (Turbopack)** | High-performance dashboard lifecycle and routing. |
 | **Simulation** | **Custom ABM Engine** | Agent-Based Modeling for real-time traffic and citizen behavior. |
-| **AI Advisor** | **Ollama (Gemma 4)** | Professional urban policy auditing and strategic reporting. |
+| **AI Advisor** | **Ollama (Gemma)** | Professional urban policy auditing and strategic reporting. |
 
 ---
 
@@ -59,7 +59,7 @@ See [SUPABASE_SCHEMA.md](./SUPABASE_SCHEMA.md) for the full SQL initialization s
 
 ### Prerequisites
 *   Node.js (v18+)
-*   Ollama (with `gemma4:e4b` model downloaded)
+*   Ollama (with `gemma` model downloaded)
 
 ### 1. Project Initialization
 ```bash

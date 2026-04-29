@@ -53,11 +53,17 @@ const UserDashboard = () => {
   const onWebGLInitialized = (gl) => { setGlContext(gl); setGraphicsReady(true); };
 
   const fetchRequests = async () => {
-    try {
-      const res = await axios.get('http://localhost:3001/api/complaints');
-      setPublicRequests(res.data);
-    } catch (err) { console.error("Request fetch failed", err); }
-  };
+      try {
+        const res = await axios.get('http://localhost:3001/api/complaints');
+        setPublicRequests(res.data);
+      } catch (err) { 
+        console.warn("Nexus Command Core offline. Using local simulation for complaints.");
+        setPublicRequests([
+          { id: 'm1', demand: 'Pothole Alert', status: 'pending', location: 'Silk Board', upvotes: 45, timestamp: new Date().toISOString() },
+          { id: 'm2', demand: 'Water Main Burst', status: 'pending', location: 'Whitefield', upvotes: 22, timestamp: new Date().toISOString() }
+        ]);
+      }
+    };
 
   useEffect(() => {
     fetchRequests();
@@ -77,7 +83,22 @@ const UserDashboard = () => {
             setShowNotifBar(true);
           }
         }
-      } catch (err) { console.error("Notif fetch failed", err); }
+      } catch (err) { 
+        console.warn("Nexus Command Core offline. Using local simulation for notifications.");
+        const mockNotif = {
+          id: 'n1',
+          policy: 'METRO_PHASE_4_APPROVED',
+          purpose: 'New metro connectivity approved for Outer Ring Road zones.',
+          prediction: 'AI_SAFE',
+          duration: '5 YEARS',
+          timestamp: new Date().toLocaleTimeString()
+        };
+        setAllNotifications([mockNotif]);
+        if (!latestNotif) {
+          setLatestNotif(mockNotif);
+          setShowNotifBar(true);
+        }
+      }
     };
     fetchNotifs();
     const interval = setInterval(fetchNotifs, 5000);

@@ -21,6 +21,30 @@ const LoginPage = () => {
     // Smooth delay for 'Syncing' feel
     await new Promise(resolve => setTimeout(resolve, 800));
 
+    // LOCAL AUTH BRIDGE - Allows login on Vercel without a backend
+    const LOCAL_USERS = {
+      '1': { password: '1', role: 'admin', name: 'Master Admin' },
+      '2': { password: '2', role: 'user', name: 'Citizen Observer' },
+      'admin': { password: 'admin123', role: 'admin', name: 'Command Admin' },
+      'user': { password: 'user123', role: 'user', name: 'Citizen Observer' }
+    };
+
+    const localUser = LOCAL_USERS[username];
+    if (localUser && localUser.password === password) {
+      localStorage.setItem('auth_token', `mock-jwt-${localUser.role}`);
+      localStorage.setItem('user_role', localUser.role);
+      localStorage.setItem('user_name', localUser.name);
+      
+      if (localUser.role === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/user');
+      }
+      setIsLoading(false);
+      return;
+    }
+
+    // FALLBACK TO BACKEND (if running locally)
     try {
       const res = await axios.post(`/api/login`, { username, password });
       if (res.data.success) {
@@ -28,7 +52,6 @@ const LoginPage = () => {
         localStorage.setItem('user_role', res.data.user.role);
         localStorage.setItem('user_name', res.data.user.name);
         
-        // Dynamic Redirection based on role
         if (res.data.user.role === 'admin') {
           router.push('/admin');
         } else {

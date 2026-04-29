@@ -228,7 +228,7 @@ const AdminSidebar = ({
               {/* 3. AI ADVISOR */}
               <div className="panel-section" style={{ marginBottom: '2rem' }}>
                 <span className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}>
-                  <Bot size={14} /> NEXUS AI ADVISOR (GEMMA-4)
+                  <Bot size={14} /> NEXUS AI ADVISOR (OLLAMA_GEMMA)
                 </span>
                 <div className="advisor-chat" ref={chatScrollRef} style={{ height: '260px', overflowY: 'auto', marginBottom: '1.25rem', marginTop: '1rem', padding: '1.25rem', background: 'rgba(0,0,0,0.03)', borderRadius: '16px', border: '1px solid var(--glass-border)', fontSize: '0.7rem', scrollBehavior: 'smooth' }}>
                   {advisorLog.length === 0 && <p style={{ opacity: 0.5, fontStyle: 'italic', textAlign: 'center', marginTop: '4rem' }}>Standing by for strategic queries...</p>}
