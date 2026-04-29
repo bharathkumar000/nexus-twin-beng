@@ -598,37 +598,24 @@ const AdminSidebar = ({
                         <MapPin size={10} /> {policyForm.lngLat.lat.toFixed(4)}, {policyForm.lngLat.lng.toFixed(4)}
                       </div>
                     )}
-                  </div>
-
-                  {/* BUDGET & TIMELINE */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.2rem', marginBottom: '1rem' }}>
+                        {/* BUDGET & TIMELINE */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                     <div>
                       <label style={{ fontSize: '0.55rem', fontWeight: 900, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>BUDGET (₹)</label>
                       <div style={{ display: 'flex', gap: '2px' }}>
                         <input 
                           type="number"
                           className="search-field" 
-                          placeholder="0.00" 
+                          placeholder="0" 
                           value={policyForm.budget} 
                           onChange={e => setPolicyForm({...policyForm, budget: e.target.value})} 
                           style={{ flex: 1, minWidth: 0, fontSize: '1rem', fontWeight: 700 }} 
                         />
                         <select 
                           className="search-field"
-                          value={policyForm.budgetUnit}
+                          value={policyForm.budgetUnit || 'Cr'}
                           onChange={e => setPolicyForm({...policyForm, budgetUnit: e.target.value})}
-                          style={{ 
-                            width: '40px', 
-                            padding: '0 2px', 
-                            fontSize: '0.65rem', 
-                            fontWeight: 900, 
-                            background: 'transparent', 
-                            border: 'none', 
-                            borderBottom: '1px solid var(--glass-border)',
-                            color: 'var(--text-primary)',
-                            cursor: 'pointer',
-                            textTransform: 'uppercase'
-                          }}
+                          style={{ width: '40px', padding: '0 2px', fontSize: '0.65rem', fontWeight: 900, background: 'transparent', border: 'none', borderBottom: '1px solid var(--glass-border)', color: 'var(--text-primary)', cursor: 'pointer', textTransform: 'uppercase' }}
                         >
                           <option value="Cr">CR</option>
                           <option value="Lakh">LAKH</option>
@@ -648,28 +635,22 @@ const AdminSidebar = ({
                         />
                         <select 
                           className="search-field"
-                          value={policyForm.durationUnit || 'Months'}
+                          value={policyForm.durationUnit || 'Years'}
                           onChange={e => setPolicyForm({...policyForm, durationUnit: e.target.value})}
-                          style={{ 
-                            width: '56px', 
-                            padding: '0 2px', 
-                            fontSize: '0.65rem', 
-                            fontWeight: 900, 
-                            background: 'transparent', 
-                            border: 'none', 
-                            borderBottom: '1px solid var(--glass-border)',
-                            color: 'var(--text-primary)',
-                            cursor: 'pointer',
-                            textTransform: 'uppercase'
-                          }}
+                          style={{ width: '56px', padding: '0 2px', fontSize: '0.65rem', fontWeight: 900, background: 'transparent', border: 'none', borderBottom: '1px solid var(--glass-border)', color: 'var(--text-primary)', cursor: 'pointer', textTransform: 'uppercase' }}
                         >
                           <option value="Years">YEARS</option>
                           <option value="Months">MONTHS</option>
-                          <option value="Days">DAYS</option>
                         </select>
                       </div>
                     </div>
                   </div>
+
+                  {/* OFFICER IN CHARGE */}
+                  <div style={{ marginBottom: '1.25rem' }}>
+                    <label style={{ fontSize: '0.55rem', fontWeight: 900, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem', letterSpacing: '0.5px' }}>OFFICER_IN_CHARGE</label>
+                    <input className="search-field" placeholder="e.g., BMRCL Strategic Cell" value={policyForm.incharge} onChange={e => setPolicyForm({...policyForm, incharge: e.target.value})} style={{ width: '100%' }} />
+                  </div>                </div>
 
 
 

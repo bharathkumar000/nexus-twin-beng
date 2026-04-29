@@ -28,21 +28,21 @@ const AdminDock = ({
               setIsSidebarCollapsed(false);
             }}
           >
-            <cat.icon size={18} />
+            <cat.icon size={18} fill={activeCategory === id ? "var(--accent)" : "none"} color={activeCategory === id ? "var(--accent)" : "currentColor"} />
             <span>{cat.label}</span>
           </button>
         ))}
       </div>
       <div className="dock-section">
         <button className={`dock-btn ${isXrayEnabled ? 'active' : ''}`} onClick={() => setIsXrayEnabled(!isXrayEnabled)}>
-          <Eye size={18} /><span>X-RAY</span>
+          <Eye size={18} fill={isXrayEnabled ? "var(--accent)" : "none"} /><span>X-RAY</span>
         </button>
         <button className="dock-btn" onClick={() => {
             const styles = ['satellite', 'hybrid', 'streets'];
             const nextIndex = (styles.indexOf(currentStyle) + 1) % styles.length;
             setCurrentStyle(styles[nextIndex]);
           }}>
-          <Layers size={18} /><span>{(currentStyle || 'SATELLITE').toUpperCase()}</span>
+          <Layers size={18} fill={currentStyle ? "var(--accent)" : "none"} /><span>{(currentStyle || 'SATELLITE').toUpperCase()}</span>
         </button>
         <button className="dock-btn danger" onClick={handleLogout} style={{ color: 'var(--danger)' }}>
           <LogOut size={18} /><span>EXIT</span>

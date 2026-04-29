@@ -82,13 +82,6 @@ const UserDashboard = () => {
       }
     };
 
-  useEffect(() => {
-    fetchRequests();
-    const interval = setInterval(fetchRequests, 2000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
     const fetchNotifs = async () => {
       try {
         const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '';
@@ -151,8 +144,14 @@ const UserDashboard = () => {
         }
       }
     };
+
+  useEffect(() => {
+    fetchRequests();
     fetchNotifs();
-    const interval = setInterval(fetchNotifs, 2000);
+    const interval = setInterval(() => {
+      fetchRequests();
+      fetchNotifs();
+    }, 2000);
     return () => clearInterval(interval);
   }, [latestNotif]);
 
@@ -302,6 +301,8 @@ const UserDashboard = () => {
         setIsSidebarCollapsed={setIsSidebarCollapsed}
         activeSidebarTab={activeSidebarTab}
         setActiveSidebarTab={setActiveSidebarTab}
+        isXrayEnabled={isXrayEnabled}
+        setIsXrayEnabled={setIsXrayEnabled}
       />
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
