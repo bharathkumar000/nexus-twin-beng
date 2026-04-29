@@ -523,11 +523,48 @@ const AdminSidebar = ({
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
                     <div>
                       <label style={{ fontSize: '0.55rem', fontWeight: 900, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>BUDGET (₹)</label>
-                      <input className="search-field" placeholder="e.g., ₹120 Crores" value={policyForm.budget} onChange={e => setPolicyForm({...policyForm, budget: e.target.value})} style={{ width: '100%' }} />
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <input 
+                          type="number"
+                          className="search-field" 
+                          placeholder="0.00" 
+                          value={policyForm.budget} 
+                          onChange={e => setPolicyForm({...policyForm, budget: e.target.value})} 
+                          style={{ flex: 1, minWidth: 0 }} 
+                        />
+                        <select 
+                          className="search-field"
+                          value={policyForm.budgetUnit}
+                          onChange={e => setPolicyForm({...policyForm, budgetUnit: e.target.value})}
+                          style={{ width: '65px', padding: '0 4px', fontSize: '0.65rem', fontWeight: 900, background: 'rgba(255,255,255,0.8)' }}
+                        >
+                          <option value="Cr">CR</option>
+                          <option value="Lakh">LAKH</option>
+                        </select>
+                      </div>
                     </div>
                     <div>
                       <label style={{ fontSize: '0.55rem', fontWeight: 900, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>TIMELINE</label>
-                      <input className="search-field" placeholder="e.g., 18 Months" value={policyForm.duration} onChange={e => setPolicyForm({...policyForm, duration: e.target.value})} style={{ width: '100%' }} />
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <input 
+                          type="number"
+                          className="search-field" 
+                          placeholder="0" 
+                          value={policyForm.duration} 
+                          onChange={e => setPolicyForm({...policyForm, duration: e.target.value})} 
+                          style={{ flex: 1, minWidth: 0 }} 
+                        />
+                        <select 
+                          className="search-field"
+                          value={policyForm.durationUnit || 'Months'}
+                          onChange={e => setPolicyForm({...policyForm, durationUnit: e.target.value})}
+                          style={{ width: '85px', padding: '0 4px', fontSize: '0.65rem', fontWeight: 900, background: 'rgba(255,255,255,0.8)' }}
+                        >
+                          <option value="Days">DAYS</option>
+                          <option value="Months">MONTHS</option>
+                          <option value="Years">YEARS</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
 

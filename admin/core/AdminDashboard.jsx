@@ -45,7 +45,7 @@ const AdminDashboard = () => {
   const [aiSuggestion, setAiSuggestion] = useState(null);
   const [advisorLog, setAdvisorLog] = useState([{ role: 'ai', content: 'SYSTEM_READY. Awaiting directives.' }]);
   const [advisorQuery, setAdvisorQuery] = useState('');
-  const [policyForm, setPolicyForm] = useState({ title: '', location: '', budget: '', duration: '', impactUnderground: '', impactTraffic: '', outcome: '', lngLat: null });
+  const [policyForm, setPolicyForm] = useState({ title: '', location: '', budget: '', budgetUnit: 'Cr', duration: '', durationUnit: 'Months', impactUnderground: '', impactTraffic: '', outcome: '', lngLat: null });
   const [aiPolicyScore, setAiPolicyScore] = useState(null);
   const [aiPolicyReport, setAiPolicyReport] = useState(null);
   const [isAnalyzingPolicy, setIsAnalyzingPolicy] = useState(false);
