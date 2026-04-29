@@ -20,7 +20,7 @@ export default function Home() {
 
   if (isChecking) {
     return (
-      <div className="app-root" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="login-root" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#ffffff' }}>
         <div className="loader-ring" />
       </div>
     );

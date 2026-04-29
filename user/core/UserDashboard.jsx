@@ -44,6 +44,7 @@ const UserDashboard = () => {
   const [latestNotif, setLatestNotif] = useState(null);
   const [publicRequests, setPublicRequests] = useState([]);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
+  const [allNotifications, setAllNotifications] = useState([]);
 
   const [viewState, setViewState] = useState({
     longitude: 77.5912, latitude: 12.9797, zoom: 14, pitch: 55, bearing: 0
@@ -65,6 +66,7 @@ const UserDashboard = () => {
     const fetchNotifs = async () => {
       try {
         const res = await axios.get('http://localhost:3001/api/notifications');
+        setAllNotifications(res.data);
         if (res.data.length > 0) {
           const newest = res.data[0];
           if (!latestNotif || newest.id !== latestNotif.id) {
@@ -114,6 +116,27 @@ const UserDashboard = () => {
     setIsSearching(false);
   };
 
+  const handleFileComplaint = async (form) => {
+    const formData = new FormData();
+    formData.append('type', form.type);
+    formData.append('description', form.description);
+    if (form.photo) formData.append('photo', form.photo);
+    
+    try {
+      const res = await axios.post('http://localhost:3001/api/complaints', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      if (res.data.success) {
+        alert("COMPLAINT_FILED: Bengaluru Nexus Command notified.");
+        return true;
+      }
+    } catch (err) {
+      console.error(err);
+      alert("ERROR: Could not establish link to Command Core.");
+    }
+    return false;
+  };
+
   const handleLogout = () => { localStorage.clear(); router.push('/portal'); };
 
   return (
@@ -157,6 +180,8 @@ const UserDashboard = () => {
         timelineYear={timelineYear} setTimelineYear={setTimelineYear}
         isSidebarCollapsed={isSidebarCollapsed}
         setIsSidebarCollapsed={setIsSidebarCollapsed}
+        handleFileComplaint={handleFileComplaint}
+        notifications={allNotifications}
       />
 
       <UserDock 

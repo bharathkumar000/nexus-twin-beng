@@ -57,7 +57,9 @@ const AdminSidebar = ({
   setCustomHeight,
   transportStep,
   aiPolicyReport,
-  handleDownloadReport
+  handleDownloadReport,
+  citizenComplaints = [],
+  handleResolveComplaint = () => {}
 }) => {
   const [isMaximized, setIsMaximized] = React.useState(false);
 
@@ -735,6 +737,47 @@ const AdminSidebar = ({
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.5rem' }}>
                         <MapPin size={10} color="var(--text-secondary)" />
                         <span style={{ fontSize: '0.55rem', color: 'var(--text-secondary)' }}>{req.location}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="panel-section" style={{ marginTop: '2rem' }}>
+                <span className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}>
+                  <AlertTriangle size={14} /> LIVE_CITIZEN_COMPLAINTS
+                </span>
+                <p style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', marginTop: '0.5rem', marginBottom: '1.25rem' }}>Direct reports from Bengaluru citizens with photo evidence.</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {citizenComplaints.length === 0 && <p style={{ fontSize: '0.6rem', opacity: 0.5 }}>No new complaints reported.</p>}
+                  {citizenComplaints.map(complaint => (
+                    <div key={complaint.id} style={{ background: 'rgba(255,255,255,0.95)', border: '1px solid var(--glass-border)', borderRadius: '12px', overflow: 'hidden' }}>
+                      {complaint.photo && (
+                        <div style={{ height: '120px', width: '100%', overflow: 'hidden', borderBottom: '1px solid var(--glass-border)' }}>
+                          <img src={complaint.photo} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                      )}
+                      <div style={{ padding: '1rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 900, color: 'var(--accent)' }}>{complaint.type.toUpperCase()}</span>
+                          <span style={{ fontSize: '0.5rem', padding: '2px 6px', borderRadius: '4px', background: complaint.status === 'resolved' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', color: complaint.status === 'resolved' ? 'var(--success)' : 'var(--danger)', fontWeight: 800 }}>
+                            {complaint.status.toUpperCase()}
+                          </span>
+                        </div>
+                        <p style={{ fontSize: '0.65rem', color: 'var(--text-primary)', marginBottom: '0.75rem', lineHeight: 1.4 }}>{complaint.description}</p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '1rem' }}>
+                          <MapPin size={10} color="var(--text-secondary)" />
+                          <span style={{ fontSize: '0.55rem', color: 'var(--text-secondary)' }}>{complaint.location || 'BENGALURU_METRO'}</span>
+                        </div>
+                        {complaint.status !== 'resolved' && (
+                          <button 
+                            className="action-btn" 
+                            onClick={() => handleResolveComplaint(complaint.id)}
+                            style={{ width: '100%', background: 'var(--success)', color: '#fff', fontSize: '0.65rem', fontWeight: 900 }}
+                          >
+                            <CheckCircle2 size={14} /> MARK AS RESOLVED
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}

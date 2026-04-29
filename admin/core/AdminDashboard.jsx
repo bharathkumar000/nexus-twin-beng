@@ -75,6 +75,28 @@ const AdminDashboard = () => {
   const [placementStart, setPlacementStart] = useState(null);
   const [customHeight, setCustomHeight] = useState(10);
   const [utilitiesData, setUtilitiesData] = useState(null);
+  const [citizenComplaints, setCitizenComplaints] = useState([]);
+
+  useEffect(() => {
+    const fetchComplaints = async () => {
+      try {
+        const res = await axios.get('http://localhost:3001/api/complaints');
+        setCitizenComplaints(res.data);
+      } catch (err) { console.error("Complaint fetch failed", err); }
+    };
+    fetchComplaints();
+    const interval = setInterval(fetchComplaints, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleResolveComplaint = async (id) => {
+    try {
+      const res = await axios.post(`http://localhost:3001/api/complaints/${id}/resolve`);
+      if (res.data.success) {
+        setCitizenComplaints(prev => prev.map(c => c.id === id ? { ...c, status: 'resolved' } : c));
+      }
+    } catch (err) { console.error("Resolve failed", err); }
+  };
 
   useEffect(() => {
     axios.get('/data/bengaluru_utilities.json').then(res => setUtilitiesData(res.data));
@@ -756,6 +778,8 @@ ${aiPolicyReport.suggestions.map(s => `- ${s}`).join('\n')}
         customHeight={customHeight}
         setCustomHeight={setCustomHeight}
         transportStep={transportStep}
+        citizenComplaints={citizenComplaints}
+        handleResolveComplaint={handleResolveComplaint}
       />
 
       <AdminDock 

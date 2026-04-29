@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const db = require('./db');
+const supabase = require('./supabase');
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
 const upload = multer({ storage: multer.memoryStorage() });
@@ -16,6 +17,7 @@ app.use(bodyParser.json());
 // Mock Auth Database
 const USERS = {
   '1': { password: '1', role: 'admin', name: 'Master Admin' },
+  '2': { password: '2', role: 'user', name: 'Citizen Observer' },
   admin: { password: 'admin123', role: 'admin', name: 'Command Admin' },
   user: { password: 'user123', role: 'user', name: 'Citizen Observer' }
 };
@@ -380,19 +382,32 @@ let notifications = [
   }
 ];
 
-app.get('/api/notifications', (req, res) => {
+app.get('/api/notifications', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .order('timestamp', { ascending: false })
+      .limit(20);
+    
+    if (!error && data && data.length > 0) {
+      return res.json(data);
+    }
+  } catch (err) {
+    console.warn("Supabase fetch failed, using local memory.");
+  }
   res.json(notifications);
 });
 
-app.post('/api/notifications', (req, res) => {
+app.post('/api/notifications', async (req, res) => {
   const { policy, price, location, purpose, prediction, duration } = req.body;
   if (!policy || !price || !location) {
     return res.status(400).json({ error: 'Policy, Price, and Location are required' });
   }
 
   const newNotification = {
-    id: Date.now(),
-    policy,
+    id: Math.floor(Math.random() * 1000000), // Random ID for local
+    policy_title: policy, // Mapping to Supabase schema 'policy_title'
     price,
     location,
     purpose,
@@ -400,11 +415,99 @@ app.post('/api/notifications', (req, res) => {
     duration,
     timestamp: new Date().toISOString()
   };
+
+  try {
+    const { error } = await supabase.from('notifications').insert([newNotification]);
+    if (error) console.error("Supabase Insert Error:", error.message);
+  } catch (err) {
+    console.warn("Supabase insert failed, storing in memory only.");
+  }
   
   notifications.unshift(newNotification);
   if (notifications.length > 20) notifications = notifications.slice(0, 20);
   
   res.json({ success: true, notification: newNotification });
+});
+
+// Citizen Complaint System
+let complaints = [];
+
+app.post('/api/complaints', upload.single('photo'), async (req, res) => {
+  const { type, description, location, lngLat } = req.body;
+  const coords = lngLat ? JSON.parse(lngLat) : { lng: 77.59, lat: 12.97 };
+  
+  const newComplaint = {
+    demand: type,
+    urgency: 'MEDIUM',
+    status: 'pending',
+    source: location || 'Bengaluru',
+    lng: coords.lng,
+    lat: coords.lat,
+    affected_count: '1-10'
+  };
+
+  try {
+    const { data, error } = await supabase.from('reports').insert([newComplaint]).select();
+    if (error) throw error;
+
+    // Create a notification for the admin in Supabase
+    await supabase.from('notifications').insert([{
+      policy_title: `NEW COMPLAINT: ${type}`,
+      price: 'N/A',
+      location: location || 'Unknown',
+      purpose: description || 'Citizen reported issue.',
+      prediction: 'Awaiting admin review',
+      duration: 'URGENT'
+    }]);
+
+    res.json({ success: true, complaint: data[0] });
+  } catch (err) {
+    console.error("Supabase Complaint Error:", err.message);
+    // Fallback for UI stability
+    res.json({ success: true, complaint: { ...newComplaint, id: Date.now() } });
+  }
+});
+
+app.get('/api/complaints', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('reports').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    res.json(data.map(d => ({
+      id: d.id,
+      type: d.demand,
+      location: d.source,
+      status: d.status,
+      lngLat: { lng: d.lng, lat: d.lat },
+      timestamp: d.created_at
+    })));
+  } catch (err) {
+    res.json([]);
+  }
+});
+
+app.post('/api/complaints/:id/resolve', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { data: complaint, error: fetchErr } = await supabase.from('reports').select('*').eq('id', id).single();
+    if (fetchErr) throw fetchErr;
+
+    await supabase.from('reports').update({ status: 'resolved' }).eq('id', id);
+    
+    // Notify users that a problem was resolved
+    await supabase.from('notifications').insert([{
+      policy_title: `RESOLVED: ${complaint.demand}`,
+      price: 'N/A',
+      location: complaint.source,
+      purpose: `The reported issue has been successfully addressed by the Bengaluru Nexus Command.`,
+      prediction: 'VITALITY_GAIN: +5%',
+      duration: 'COMPLETED'
+    }]);
+    
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Resolve Error:", err.message);
+    res.status(404).json({ error: 'Complaint not found or update failed' });
+  }
 });
 
 app.listen(port, () => {

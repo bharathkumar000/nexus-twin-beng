@@ -47,7 +47,7 @@ const NotificationBar = ({ showNotifBar, latestNotif, setShowNotifBar }) => {
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.75rem' }}>
               <FileText size={16} color="var(--accent)" style={{ marginTop: '2px', flexShrink: 0 }} />
               <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: '1.3' }}>
-                {latestNotif.policy}
+                {latestNotif.policy_title || latestNotif.policy}
               </h4>
             </div>
 
