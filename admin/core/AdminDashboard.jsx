@@ -90,12 +90,12 @@ const AdminDashboard = () => {
         let localData = JSON.parse(localStorage.getItem('nexus_demo_complaints') || '[]');
         if (localData.length === 0) {
           localData = [
-            { id: 'm1', demand: 'Road Repair Request', type: 'Road Repair Request', status: 'pending', location: 'Malleshwaram', upvotes: 12, timestamp: new Date().toISOString() },
-            { id: 'm2', demand: 'Water Supply Issue', type: 'Water Supply Issue', status: 'pending', location: 'Indiranagar', upvotes: 8, timestamp: new Date().toISOString() }
+            { id: 'm1', demand: 'Road Repair Request', type: 'Road Repair Request', status: 'pending', location: 'Malleshwaram', upvotes: 12, timestamp: new Date().toISOString(), lngLat: { lng: 77.5650, lat: 12.9988 } },
+            { id: 'm2', demand: 'Water Supply Issue', type: 'Water Supply Issue', status: 'pending', location: 'Indiranagar', upvotes: 8, timestamp: new Date().toISOString(), lngLat: { lng: 77.6387, lat: 12.9784 } }
           ];
           localStorage.setItem('nexus_demo_complaints', JSON.stringify(localData));
         }
-        setCitizenComplaints(localData.sort((a,b) => b.upvotes - a.upvotes));
+        setCitizenComplaints(localData);
       }
     };
     fetchComplaints();
@@ -110,25 +110,7 @@ const AdminDashboard = () => {
       if (res.data.success) {
         setCitizenComplaints(prev => prev.map(c => c.id === id ? { ...c, status: 'resolved' } : c));
       }
-    } catch (err) {
-      console.warn("Offline resolve. Updating local storage.");
-      const demoComplaints = JSON.parse(localStorage.getItem('nexus_demo_complaints') || '[]');
-      const updated = demoComplaints.map(c => c.id === id ? { ...c, status: 'resolved' } : c);
-      localStorage.setItem('nexus_demo_complaints', JSON.stringify(updated));
-      setCitizenComplaints(updated.sort((a,b) => b.upvotes - a.upvotes));
-
-      const demoNotifs = JSON.parse(localStorage.getItem('nexus_demo_notifications') || '[]');
-      const comp = updated.find(c => c.id === id);
-      demoNotifs.unshift({
-        id: Date.now(),
-        policy_title: `RESOLVED: ${comp ? (comp.type || comp.demand) : 'Grievance'}`,
-        purpose: 'Community grievance marked as resolved by Nexus Administration.',
-        prediction: 'AI_SAFE',
-        duration: 'RESOLVED',
-        timestamp: new Date().toISOString()
-      });
-      localStorage.setItem('nexus_demo_notifications', JSON.stringify(demoNotifs));
-    }
+    } catch (err) { console.error("Resolve failed", err); }
   };
 
   useEffect(() => {
@@ -285,49 +267,7 @@ const AdminDashboard = () => {
   }, []); // Remove dependencies to keep it perfectly fixed across the land
 
   const utilityLayers = React.useMemo(() => {
-    if (!isXrayEnabled) return [];
-    // Procedural Grid Generation (Organic, non-symmetric distribution)
-    const denseGridPipes = [];
-    const subStep = 0.00045; 
-    const range = 45; 
-    const center = [77.5912, 12.9797];
-
-    for (let i = -range; i <= range; i++) {
-        if (Math.random() > 0.7) continue; // Randomly skip some lines for realism
-
-        const jitter = () => (Math.random() - 0.5) * 0.0003;
-        const types = ['WaterPipe', 'GasLine', 'ElectricityLine', 'SewagePipe'];
-        
-        // Horizontal Segments (E-W)
-        for (let j = -3; j < 3; j++) {
-          if (Math.random() > 0.6) continue;
-          denseGridPipes.push({
-              properties: { type: types[Math.floor(Math.random() * types.length)] },
-              geometry: { 
-                coordinates: [
-                  [center[0] + (j * 0.01) + jitter(), center[1] + (i * subStep) + jitter()], 
-                  [center[0] + ((j + 1) * 0.01) + jitter(), center[1] + (i * subStep) + jitter()]
-                ] 
-              }
-          });
-        }
-
-        // Vertical Segments (N-S)
-        for (let j = -3; j < 3; j++) {
-          if (Math.random() > 0.6) continue;
-          denseGridPipes.push({
-              properties: { type: types[Math.floor(Math.random() * types.length)] },
-              geometry: { 
-                coordinates: [
-                  [center[0] + (i * subStep) + jitter(), center[1] + (j * 0.01) + jitter()], 
-                  [center[0] + (i * subStep) + jitter(), center[1] + ((j + 1) * 0.01) + jitter()]
-                ] 
-              }
-          });
-        }
-    }
-
-    const allPipes = [...(utilitiesData?.features || []), ...denseGridPipes];
+    if (!utilitiesData || !isXrayEnabled) return [];
 
     const typeConfig = {
       'WaterPipe': { color: [37, 99, 235], depth: -6, offset: -0.00003 },
@@ -340,7 +280,7 @@ const AdminDashboard = () => {
       // Glow Layer (Base)
       new PathLayer({
         id: 'utility-pipes-glow',
-        data: allPipes,
+        data: utilitiesData.features,
         getPath: d => d.geometry.coordinates.map(p => {
           const cfg = typeConfig[d.properties.type] || { depth: -5, offset: 0 };
           return [p[0] + cfg.offset, p[1] + cfg.offset, cfg.depth];
@@ -349,22 +289,22 @@ const AdminDashboard = () => {
           const c = (typeConfig[d.properties.type] || { color: [255, 255, 255] }).color;
           return [...c, 80];
         },
-        getWidth: 12,
-        widthMinPixels: 3,
+        getWidth: 15,
+        widthMinPixels: 4,
         blur: 1,
         pickable: false
       }),
       // Core Pipe Layer (Solid)
       new PathLayer({
         id: 'utility-pipes-core',
-        data: allPipes,
+        data: utilitiesData.features,
         getPath: d => d.geometry.coordinates.map(p => {
           const cfg = typeConfig[d.properties.type] || { depth: -5, offset: 0 };
           return [p[0] + cfg.offset, p[1] + cfg.offset, cfg.depth];
         }),
         getColor: d => (typeConfig[d.properties.type] || { color: [255, 255, 255] }).color,
-        getWidth: 3,
-        widthMinPixels: 1,
+        getWidth: 4,
+        widthMinPixels: 1.5,
         pickable: true,
         onHover: ({ object }) => {
           if (object) {
@@ -606,19 +546,7 @@ ${aiPolicyReport.suggestions.map(s => `- ${s}`).join('\n')}
         duration: policyForm.duration || 'TBD'
       });
     } catch (err) {
-      console.warn('Notification POST failed (server may be offline). Using local storage.');
-      const demoNotifs = JSON.parse(localStorage.getItem('nexus_demo_notifications') || '[]');
-      demoNotifs.unshift({
-        id: Date.now(),
-        policy_title: policyForm.title || 'URBAN POLICY DEPLOYMENT',
-        price: policyForm.budget || 'N/A',
-        location: policyForm.location || 'Bengaluru Central',
-        purpose: policyForm.outcome || 'Strategic urban development initiative.',
-        prediction: `AI Viability Score: ${aiPolicyScore}% — SAFE`,
-        duration: policyForm.duration || 'TBD',
-        timestamp: new Date().toISOString()
-      });
-      localStorage.setItem('nexus_demo_notifications', JSON.stringify(demoNotifs));
+      console.warn('Notification POST failed (server may be offline):', err.message);
     }
     await new Promise(resolve => setTimeout(resolve, 1500));
 

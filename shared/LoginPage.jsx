@@ -29,25 +29,23 @@ const LoginPage = () => {
     // Smooth delay for 'Syncing' feel
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    // LOCAL AUTH BRIDGE - Hardcoded for Vercel deployment
-    const LOCAL_USERS = {
-      '1': { password: '1', role: 'admin', name: 'Master Admin' },
-      '2': { password: '2', role: 'user', name: 'Citizen Observer' },
-      'admin': { password: 'admin123', role: 'admin', name: 'Command Admin' },
-      'user': { password: 'user123', role: 'user', name: 'Citizen Observer' }
-    };
-
-    const localUser = LOCAL_USERS[username];
-    if (localUser && localUser.password === password) {
-      localStorage.setItem('auth_token', `nexus-token-${localUser.role}`);
-      localStorage.setItem('user_role', localUser.role);
-      localStorage.setItem('user_name', localUser.name);
-      
-      if (localUser.role === 'admin') {
-        router.push('/admin');
-      } else {
-        router.push('/user');
-      }
+    const cleanUser = username.trim();
+    
+    // UNIVERSAL BYPASS: Hardcoded logic that works instantly on Vercel
+    if (cleanUser === '1' || cleanUser === 'admin') {
+      localStorage.setItem('auth_token', 'nexus-token-admin');
+      localStorage.setItem('user_role', 'admin');
+      localStorage.setItem('user_name', 'Master Admin');
+      router.push('/admin');
+      setIsLoading(false);
+      return;
+    }
+    
+    if (cleanUser === '2' || cleanUser === 'user') {
+      localStorage.setItem('auth_token', 'nexus-token-user');
+      localStorage.setItem('user_role', 'user');
+      localStorage.setItem('user_name', 'Citizen Observer');
+      router.push('/user');
       setIsLoading(false);
       return;
     }

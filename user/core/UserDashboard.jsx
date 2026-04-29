@@ -61,15 +61,15 @@ const UserDashboard = () => {
       } catch (err) { 
         console.warn("Nexus Command Core offline. Using local simulation for complaints.");
         setPublicRequests([
-          { id: 'm1', demand: 'Pothole Alert', status: 'pending', location: 'Silk Board', upvotes: 45, timestamp: new Date().toISOString() },
-          { id: 'm2', demand: 'Water Main Burst', status: 'pending', location: 'Whitefield', upvotes: 22, timestamp: new Date().toISOString() }
+          { id: 'm1', demand: 'Pothole Alert', status: 'pending', location: 'Silk Board', upvotes: 45, timestamp: new Date().toISOString(), lngLat: { lng: 77.6226, lat: 12.9177 } },
+          { id: 'm2', demand: 'Water Main Burst', status: 'pending', location: 'Whitefield', upvotes: 22, timestamp: new Date().toISOString(), lngLat: { lng: 77.7500, lat: 12.9698 } }
         ]);
       }
     };
 
   useEffect(() => {
     fetchRequests();
-    const interval = setInterval(fetchRequests, 5000);
+    const interval = setInterval(fetchRequests, 2000);
     return () => clearInterval(interval);
   }, []);
 
@@ -104,7 +104,7 @@ const UserDashboard = () => {
       }
     };
     fetchNotifs();
-    const interval = setInterval(fetchNotifs, 5000);
+    const interval = setInterval(fetchNotifs, 2000);
     return () => clearInterval(interval);
   }, [latestNotif]);
 
@@ -125,7 +125,7 @@ const UserDashboard = () => {
     }) : null,
     new ScatterplotLayer({
       id: 'public-requests-layer',
-      data: publicRequests,
+      data: publicRequests.filter(d => d.lngLat),
       getPosition: d => [d.lngLat.lng, d.lngLat.lat],
       getFillColor: [239, 68, 68],
       getRadius: 15,

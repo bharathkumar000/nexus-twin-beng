@@ -100,8 +100,8 @@ const UserSidebar = ({
         </button>
       </div>
 
-      <div className="widget content-widget" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
-        <div className="scroll-area" style={{ flex: 1, padding: '1.25rem' }}>
+      <div className="widget content-widget" style={{ flex: 1, display: 'flex', flexDirection: 'column', height: 'calc(100% - 80px)', overflow: 'hidden' }}>
+        <div className="scroll-area" style={{ flex: 1, overflowY: 'auto', padding: '1.25rem' }}>
 
           <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
             <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
@@ -114,37 +114,12 @@ const UserSidebar = ({
             />
           </div>
           
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
-            <button 
-              onClick={() => setCurrentTab('notifications')}
-              style={{ 
-                flex: 1, padding: '0.6rem', borderRadius: '8px', fontSize: '0.65rem', fontWeight: 900,
-                background: currentTab === 'notifications' ? 'var(--accent)' : 'rgba(0,0,0,0.03)',
-                color: currentTab === 'notifications' ? '#fff' : 'var(--text-secondary)',
-                border: 'none', transition: 'all 0.2s'
-              }}
-            >
-              ALERTS
-            </button>
-            <button 
-              onClick={() => setCurrentTab('complaints')}
-              style={{ 
-                flex: 1, padding: '0.6rem', borderRadius: '8px', fontSize: '0.65rem', fontWeight: 900,
-                background: currentTab === 'complaints' ? 'var(--accent)' : 'rgba(0,0,0,0.03)',
-                color: currentTab === 'complaints' ? '#fff' : 'var(--text-secondary)',
-                border: 'none', transition: 'all 0.2s'
-              }}
-            >
-              REPORT
-            </button>
-          </div>
-
           {currentTab === 'notifications' && (
           <div className="panel-section" style={{ marginBottom: '2rem' }}>
             <span className="section-label" style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: 900, fontSize: '0.6rem', letterSpacing: '1px' }}>
               <Bell size={14} strokeWidth={2.5} /> NEXUS_DIRECTIVE_FEED
             </span>
-            <div style={{ marginTop: '1rem', maxHeight: '350px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingRight: '0.5rem' }} className="scroll-area">
+            <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {filteredNotifications.length === 0 && (
                 <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.4 }}>
                   <Bell size={24} style={{ marginBottom: '0.5rem' }} />
@@ -269,7 +244,7 @@ const UserSidebar = ({
             <span className="section-label" style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: 900, fontSize: '0.6rem', letterSpacing: '1px' }}>
               <CheckCircle2 size={14} strokeWidth={2.5} /> PUBLIC_REPORTS_&_UPVOTING
             </span>
-            <div style={{ marginTop: '1rem', maxHeight: '300px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingRight: '0.5rem' }} className="scroll-area">
+            <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {filteredReports.length === 0 && (
                 <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.4 }}>
                   <MessageSquare size={24} style={{ marginBottom: '0.5rem' }} />
@@ -338,6 +313,7 @@ const UserSidebar = ({
           )}
       </div>
     </div>
+  </div>
   );
 };
 

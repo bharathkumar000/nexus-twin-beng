@@ -141,6 +141,8 @@ const MapLayout = ({
       antialias: true
     });
 
+    const hoveredIdRef = { current: null };
+
     map.current.on('load', () => {
       setMapLoaded(true);
       if (onMapLoad) onMapLoad(map.current);
@@ -168,20 +170,20 @@ const MapLayout = ({
       // Hover effect on buildings
       map.current.on('mousemove', '3d-buildings', (e) => {
         if (e.features.length > 0) {
-          if (hoveredId !== null) {
-            try { map.current.setFeatureState({ source: 'buildings', id: hoveredId }, { hover: false }); } catch(err){}
+          if (hoveredIdRef.current !== null) {
+            try { map.current.setFeatureState({ source: 'buildings', id: hoveredIdRef.current }, { hover: false }); } catch(err){}
           }
-          hoveredId = e.features[0].id;
-          try { map.current.setFeatureState({ source: 'buildings', id: hoveredId }, { hover: true }); } catch(err){}
+          hoveredIdRef.current = e.features[0].id;
+          try { map.current.setFeatureState({ source: 'buildings', id: hoveredIdRef.current }, { hover: true }); } catch(err){}
           map.current.getCanvas().style.cursor = 'pointer';
         }
       });
 
       map.current.on('mouseleave', '3d-buildings', () => {
-        if (hoveredId !== null) {
-          try { map.current.setFeatureState({ source: 'buildings', id: hoveredId }, { hover: false }); } catch(err){}
+        if (hoveredIdRef.current !== null) {
+          try { map.current.setFeatureState({ source: 'buildings', id: hoveredIdRef.current }, { hover: false }); } catch(err){}
         }
-        hoveredId = null;
+        hoveredIdRef.current = null;
         map.current.getCanvas().style.cursor = '';
       });
 
@@ -205,9 +207,8 @@ const MapLayout = ({
         }
       });
 
-      onMapLoad(map.current);
     });
-  }, []);
+  }, [onMapLoad]);
 
   useEffect(() => {
     if (!map.current || !map.current.isStyleLoaded() || !gridData) return;

@@ -194,7 +194,7 @@ const AdminSidebar = ({
                                 color: '#fff', 
                                 background: req.status === 'resolved' ? '#10b981' : '#f59e0b',
                                 letterSpacing: '0.5px'
-                              }}>{(req.status || 'PENDING').toUpperCase()}</span>
+                              }}>{(req.status || 'pending').toUpperCase()}</span>
                             </td>
                             <td style={{ padding: '0.55rem 0.6rem', textAlign: 'center', fontSize: '0.55rem', color: 'var(--text-secondary)' }}>{req.location || 'Bengaluru'}</td>
                             <td style={{ padding: '0.55rem 0.6rem', textAlign: 'right' }}>
@@ -804,7 +804,7 @@ const AdminSidebar = ({
                       })}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-primary)' }}>{(req.type || 'UNKNOWN').toUpperCase()}</span>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-primary)' }}>{(req.type || req.demand || 'REQUEST').toUpperCase()}</span>
                         <span style={{ 
                           fontSize: '0.5rem', 
                           padding: '3px 8px', 
@@ -812,7 +812,7 @@ const AdminSidebar = ({
                           background: req.status === 'Resolved' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', 
                           color: req.status === 'Resolved' ? 'var(--success)' : 'var(--danger)',
                           fontWeight: 900
-                        }}>{(req.status || 'PENDING').toUpperCase()}</span>
+                        }}>{(req.status || 'pending').toUpperCase()}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.5rem' }}>
                         <MapPin size={10} color="var(--text-secondary)" />
@@ -839,9 +839,9 @@ const AdminSidebar = ({
                       )}
                       <div style={{ padding: '1rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                          <span style={{ fontSize: '0.7rem', fontWeight: 900, color: 'var(--accent)' }}>{(complaint.type || 'UNKNOWN').toUpperCase()}</span>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 900, color: 'var(--accent)' }}>{(complaint.type || 'ANOMALY').toUpperCase()}</span>
                           <span style={{ fontSize: '0.5rem', padding: '2px 6px', borderRadius: '4px', background: complaint.status === 'resolved' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', color: complaint.status === 'resolved' ? 'var(--success)' : 'var(--danger)', fontWeight: 800 }}>
-                            {(complaint.status || 'PENDING').toUpperCase()}
+                            {(complaint.status || 'pending').toUpperCase()}
                           </span>
                         </div>
                         <p style={{ fontSize: '0.65rem', color: 'var(--text-primary)', marginBottom: '0.75rem', lineHeight: 1.4 }}>{complaint.description}</p>
