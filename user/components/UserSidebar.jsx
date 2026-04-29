@@ -82,21 +82,52 @@ const UserSidebar = ({
             <span style={{ fontSize: '0.5rem', color: 'var(--success)', fontWeight: 900 }}>PUBLIC_CORE_v5.0</span>
           </div>
         </div>
-        <button 
+        <motion.button 
           onClick={() => setIsSidebarCollapsed(true)}
+          whileHover={{ scale: 1.1, rotate: 90 }}
+          whileTap={{ scale: 0.9 }}
           style={{ 
             background: 'rgba(0,0,0,0.05)', 
             border: 'none', 
             borderRadius: '50%', 
-            width: '28px', 
-            height: '28px', 
+            width: '32px', 
+            height: '32px', 
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'center',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            transition: 'background 0.2s'
           }}
         >
-          <X size={16} color="var(--text-secondary)" />
+          <X size={18} color="var(--text-secondary)" />
+        </motion.button>
+      </div>
+
+      {/* NEW: INTERNAL TAB SWITCHER FOR QUICK ACCESS */}
+      <div style={{ display: 'flex', gap: '0.5rem', padding: '0 1.25rem', marginBottom: '1rem' }}>
+        <button 
+          onClick={() => setCurrentTab('notifications')}
+          style={{ 
+            flex: 1, padding: '0.6rem', borderRadius: '10px', border: 'none',
+            background: currentTab === 'notifications' ? 'var(--accent)' : 'rgba(37,99,235,0.05)',
+            color: currentTab === 'notifications' ? '#fff' : 'var(--accent)',
+            fontSize: '0.65rem', fontWeight: 900, cursor: 'pointer', transition: 'all 0.2s',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem'
+          }}
+        >
+          <Bell size={14} /> ALERTS
+        </button>
+        <button 
+          onClick={() => setCurrentTab('complaints')}
+          style={{ 
+            flex: 1, padding: '0.6rem', borderRadius: '10px', border: 'none',
+            background: currentTab === 'complaints' ? 'var(--accent)' : 'rgba(37,99,235,0.05)',
+            color: currentTab === 'complaints' ? '#fff' : 'var(--accent)',
+            fontSize: '0.65rem', fontWeight: 900, cursor: 'pointer', transition: 'all 0.2s',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem'
+          }}
+        >
+          <MessageSquare size={14} /> REPORT
         </button>
       </div>
 
@@ -151,7 +182,18 @@ const UserSidebar = ({
                       <TrendingUp size={10} color="var(--success)" />
                       <span style={{ fontSize: '0.5rem', fontWeight: 900, color: 'var(--success)' }}>{n.prediction || 'AI_SAFE'}</span>
                     </div>
-                    <span style={{ fontSize: '0.45rem', fontWeight: 800, color: 'var(--accent)' }}>VIEW_DETAILS →</span>
+                    <motion.button 
+                      whileHover={{ x: 3, color: 'var(--accent)' }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={(e) => { e.stopPropagation(); setSelectedNotif(n); }}
+                      style={{ 
+                        background: 'transparent', border: 'none', padding: 0,
+                        fontSize: '0.45rem', fontWeight: 800, color: 'var(--accent)',
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px'
+                      }}
+                    >
+                      VIEW_DETAILS →
+                    </motion.button>
                   </div>
                 </motion.div>
               ))}
@@ -186,28 +228,33 @@ const UserSidebar = ({
 
               <div style={{ marginBottom: '1.25rem' }}>
                 <label style={{ fontSize: '0.55rem', fontWeight: 900, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.5rem' }}>GEOGRAPHIC_TAGGING</label>
-                <button 
+                <motion.button 
+                  whileHover={{ scale: 1.02, background: 'rgba(16,185,129,0.05)' }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={handleCaptureLocation}
                   disabled={isLocating}
                   style={{ 
                     width: '100%', padding: '0.75rem', borderRadius: '10px', border: '1px solid var(--glass-border)',
                     background: complaintForm.location ? 'rgba(16,185,129,0.1)' : '#fff',
                     color: complaintForm.location ? 'var(--success)' : 'var(--text-primary)',
-                    fontSize: '0.7rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+                    fontSize: '0.7rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                    cursor: 'pointer'
                   }}
                 >
                   {isLocating ? <RefreshCw className="spin" size={14} /> : <><MapPin size={14} /> {complaintForm.location ? 'LOCATION_SYNCED' : 'CAPTURE_CURRENT_LOCATION'}</>}
-                </button>
+                </motion.button>
               </div>
 
               <div style={{ marginBottom: '1.25rem' }}>
                 <label style={{ fontSize: '0.55rem', fontWeight: 900, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.5rem' }}>VISUAL_EVIDENCE</label>
-                <div 
+                <motion.div 
+                  whileHover={{ scale: 1.02, borderColor: 'var(--accent)' }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => fileInputRef.current.click()}
                   style={{ 
                     height: '110px', background: '#fff', border: '2px dashed var(--accent-glass)', 
                     borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                    cursor: 'pointer', overflow: 'hidden'
+                    cursor: 'pointer', overflow: 'hidden', transition: 'border-color 0.2s'
                   }}
                 >
                   {complaintForm.photo ? (
@@ -219,7 +266,7 @@ const UserSidebar = ({
                     </div>
                   )}
                   <input type="file" hidden ref={fileInputRef} accept="image/*" capture="environment" onChange={e => setComplaintForm({...complaintForm, photo: e.target.files[0]})} />
-                </div>
+                </motion.div>
               </div>
 
               <div style={{ marginBottom: '1.5rem' }}>
@@ -233,14 +280,20 @@ const UserSidebar = ({
                 />
               </div>
 
-              <button 
+              <motion.button 
+                whileHover={{ scale: 1.02, background: '#1d4ed8' }}
+                whileTap={{ scale: 0.98 }}
                 className="action-btn" 
                 onClick={onSubmit} 
                 disabled={isSubmitting}
-                style={{ width: '100%', background: 'var(--accent)', color: '#fff', borderRadius: '12px', padding: '1rem', fontWeight: 900, letterSpacing: '1px' }}
+                style={{ 
+                  width: '100%', background: 'var(--accent)', color: '#fff', 
+                  borderRadius: '12px', padding: '1rem', fontWeight: 900, 
+                  letterSpacing: '1px', border: 'none', cursor: 'pointer'
+                }}
               >
                 {isSubmitting ? <Loader2 className="spin" size={16} /> : <><AlertCircle size={16} /> BROADCAST_REPORT</>}
-              </button>
+              </motion.button>
             </div>
           </div>
 
@@ -403,12 +456,22 @@ const UserSidebar = ({
             </div>
 
             <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
-              <button onClick={() => { setSelectedNotif(null); showToast("Directive supported.", "success"); }} style={{ flex: 1, padding: '1rem', borderRadius: '12px', border: 'none', background: 'var(--accent)', color: '#fff', fontSize: '0.75rem', fontWeight: 900, cursor: 'pointer' }}>
+              <motion.button 
+                whileHover={{ scale: 1.05, background: '#1d4ed8' }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => { setSelectedNotif(null); showToast("Directive supported.", "success"); }} 
+                style={{ flex: 1, padding: '1rem', borderRadius: '12px', border: 'none', background: 'var(--accent)', color: '#fff', fontSize: '0.75rem', fontWeight: 900, cursor: 'pointer' }}
+              >
                 SUPPORT POLICY
-              </button>
-              <button onClick={() => { setSelectedNotif(null); showToast("Clarification requested.", "info"); }} style={{ flex: 1, padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#fff', color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 900, cursor: 'pointer' }}>
+              </motion.button>
+              <motion.button 
+                whileHover={{ scale: 1.05, background: '#f8fafc' }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => { setSelectedNotif(null); showToast("Clarification requested.", "info"); }} 
+                style={{ flex: 1, padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#fff', color: 'var(--text-secondary)', fontSize: '0.75rem', fontWeight: 900, cursor: 'pointer' }}
+              >
                 REQUEST CLARIFICATION
-              </button>
+              </motion.button>
             </div>
           </motion.div>
         )}

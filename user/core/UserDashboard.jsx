@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import { Search } from 'lucide-react';
 import { ScatterplotLayer } from '@deck.gl/layers';
 import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 import { TripsLayer } from '@deck.gl/geo-layers';
@@ -28,7 +29,6 @@ const UserDashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [currentStyle, setCurrentStyle] = useState('streets');
-  const [isXrayEnabled, setIsXrayEnabled] = useState(false);
   const [selectedBuildings, setSelectedBuildings] = useState([]);
 
   const [floodLevel, setFloodLevel] = useState(0);
@@ -253,7 +253,7 @@ const UserDashboard = () => {
         onViewStateChange={({ viewState }) => setViewState(viewState)}
         layers={layers} 
         currentStyle={currentStyle} 
-        isXrayEnabled={isXrayEnabled}
+        isXrayEnabled={false}
         onMapLoad={(m) => { mapRef.current = m; setMapLoaded(true); }}
         onWebGLInitialized={onWebGLInitialized}
         onBuildingClick={(building) => {
@@ -271,6 +271,12 @@ const UserDashboard = () => {
 
       <div className="search-container">
         <div className="search-box">
+          <Search 
+            size={18} 
+            color="var(--text-secondary)" 
+            style={{ cursor: 'pointer', transition: 'color 0.2s' }} 
+            onClick={() => handleSearch({ key: 'Enter' })} 
+          />
           <input className="search-field" placeholder="Search Bengaluru Hub..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onKeyDown={handleSearch} />
         </div>
       </div>
@@ -301,8 +307,6 @@ const UserDashboard = () => {
         setIsSidebarCollapsed={setIsSidebarCollapsed}
         activeSidebarTab={activeSidebarTab}
         setActiveSidebarTab={setActiveSidebarTab}
-        isXrayEnabled={isXrayEnabled}
-        setIsXrayEnabled={setIsXrayEnabled}
       />
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>

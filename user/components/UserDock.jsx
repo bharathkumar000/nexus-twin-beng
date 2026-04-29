@@ -9,63 +9,66 @@ const UserDock = ({
   isSidebarCollapsed, 
   setIsSidebarCollapsed, 
   activeSidebarTab, 
-  setActiveSidebarTab,
-  isXrayEnabled,
-  setIsXrayEnabled
+  setActiveSidebarTab
 }) => {
   return (
     <div className="bottom-dock">
       <div className="dock-section">
-        <button 
+        <motion.button 
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           className={`dock-btn ${!isSidebarCollapsed && activeSidebarTab === 'complaints' ? 'active' : ''}`}
-          onClick={() => { setActiveSidebarTab('complaints'); setIsSidebarCollapsed(false); }}
+          onClick={() => { 
+            if (!isSidebarCollapsed && activeSidebarTab === 'complaints') {
+              setIsSidebarCollapsed(true);
+            } else {
+              setActiveSidebarTab('complaints'); 
+              setIsSidebarCollapsed(false); 
+            }
+          }}
         >
-          <motion.div
-            animate={!isSidebarCollapsed && activeSidebarTab === 'complaints' ? { scale: [1, 1.1, 1] } : {}}
-            transition={{ duration: 0.3 }}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
-          >
-            <MessageSquare size={18} /><span>REPORT</span>
-          </motion.div>
-        </button>
+          <MessageSquare size={18} /><span>REPORT</span>
+        </motion.button>
 
-        <button 
+        <motion.button 
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           className={`dock-btn ${!isSidebarCollapsed && activeSidebarTab === 'notifications' ? 'active' : ''}`}
-          onClick={() => { setActiveSidebarTab('notifications'); setIsSidebarCollapsed(false); }}
+          onClick={() => { 
+            if (!isSidebarCollapsed && activeSidebarTab === 'notifications') {
+              setIsSidebarCollapsed(true);
+            } else {
+              setActiveSidebarTab('notifications'); 
+              setIsSidebarCollapsed(false); 
+            }
+          }}
         >
-          <motion.div
-            animate={!isSidebarCollapsed && activeSidebarTab === 'notifications' ? { scale: [1, 1.1, 1] } : {}}
-            transition={{ duration: 0.3 }}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
-          >
-            <Bell size={18} /><span>ALERTS</span>
-          </motion.div>
-        </button>
+          <Bell size={18} /><span>ALERTS</span>
+        </motion.button>
 
-        <button className="dock-btn" onClick={() => {
+        <motion.button 
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="dock-btn" 
+          onClick={() => {
             const styles = ['satellite', 'hybrid', 'streets'];
             const nextIndex = (styles.indexOf(currentStyle) + 1) % styles.length;
             setCurrentStyle(styles[nextIndex]);
-          }}>
-          <Layers size={18} /><span>{(currentStyle || 'streets').toUpperCase()}</span>
-        </button>
-
-        <button 
-          className={`dock-btn ${isXrayEnabled ? 'active' : ''}`}
-          onClick={() => setIsXrayEnabled(!isXrayEnabled)}
+          }}
         >
-          <motion.div
-            animate={isXrayEnabled ? { scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] } : {}}
-            transition={{ duration: 0.3 }}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
-          >
-            <ShieldAlert size={18} /><span>{isXrayEnabled ? 'SURFACE' : 'X-RAY'}</span>
-          </motion.div>
-        </button>
+          <Layers size={18} /><span>{(currentStyle || 'streets').toUpperCase()}</span>
+        </motion.button>
 
-        <button className="dock-btn danger" onClick={handleLogout} style={{ color: 'var(--danger)' }}>
+
+        <motion.button 
+          whileHover={{ scale: 1.05, background: 'rgba(239, 68, 68, 0.1)' }}
+          whileTap={{ scale: 0.95 }}
+          className="dock-btn danger" 
+          onClick={handleLogout} 
+          style={{ color: 'var(--danger)' }}
+        >
           <LogOut size={18} /><span>LOGOUT</span>
-        </button>
+        </motion.button>
       </div>
     </div>
   );
