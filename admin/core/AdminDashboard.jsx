@@ -43,7 +43,7 @@ const AdminDashboard = () => {
   const [timeHorizon, setTimeHorizon] = useState('present');
   const [globalConfidence, setGlobalConfidence] = useState(82);
   const [aiSuggestion, setAiSuggestion] = useState(null);
-  const [advisorLog, setAdvisorLog] = useState([{ role: 'ai', content: 'SYSTEM_READY. Awaiting directives.' }]);
+  const [advisorLog, setAdvisorLog] = useState([{ role: 'ai', content: 'NEXUS_AI_STANDBY. Awaiting project-specific strategic directives. (Authorized for Urban Planning & Infrastructure Counsel only.)' }]);
   const [advisorQuery, setAdvisorQuery] = useState('');
   const [policyForm, setPolicyForm] = useState({ title: '', location: '', budget: '', budgetUnit: 'Cr', duration: '', durationUnit: 'Months', impactUnderground: '', impactTraffic: '', outcome: '', lngLat: null });
   const [aiPolicyScore, setAiPolicyScore] = useState(null);
@@ -306,11 +306,19 @@ const AdminDashboard = () => {
     setTimeout(() => setAiSuggestion({ text: "Bypass mode active. Shift infrastructure East.", action: "RE-ROUTE" }), 1500);
   };
 
-  const handleAskAdvisor = () => {
+  const handleAskAdvisor = async () => {
     if (!advisorQuery.trim()) return;
-    const q = advisorQuery; setAdvisorQuery('');
+    const q = advisorQuery; 
+    setAdvisorQuery('');
     setAdvisorLog(p => [...p, { role: 'user', content: q }]);
-    setTimeout(() => setAdvisorLog(p => [...p, { role: 'ai', content: "Strategic assessment complete. Location: "+policyForm.location+". Recommendation: Deploy transit hub." }]), 1000);
+    
+    try {
+      const res = await axios.post('http://localhost:3001/api/policy-advisor', { query: q });
+      setAdvisorLog(p => [...p, { role: 'ai', content: res.data.report }]);
+    } catch (err) {
+      console.error("Advisor Error:", err);
+      setAdvisorLog(p => [...p, { role: 'ai', content: "SYSTEM_ERROR: Command Core link unstable. Please retry." }]);
+    }
   };
 
   const handleAnalyzePolicy = async () => {

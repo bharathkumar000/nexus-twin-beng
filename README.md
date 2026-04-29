@@ -1,11 +1,11 @@
-# 🏙️ Bengaluru Nexus: 3D Digital Twin Command Center v5.0
+# 🏙️ Bengaluru Nexus: 3D Digital Twin Command Center v6.0
 
 ![Banner](./assets/banner.png)
 
 ## 📡 PROJECT OVERVIEW
 **Bengaluru Nexus** is a professional-grade urban simulation and spatial governance platform. Designed as a high-fidelity "Cyber-SOC" interface for Bengaluru, it synthesizes real-world geospatial data, 3D architectural footprints, and critical utility infrastructure into a unified digital twin.
 
-Built for urban planners and policy makers, the platform leverages **Supabase + PostGIS** for managed spatial storage and **Next.js 16.2.4** for high-performance city-wide visualization.
+Built for urban planners and policy makers, the platform leverages **Supabase + PostGIS** for managed spatial storage and **Next.js 16** for high-performance city-wide visualization.
 
 ---
 
@@ -20,38 +20,38 @@ The project follows a **Domain-Driven Modular** structure, separating the platfo
 | **Simulation** | **Custom ABM Engine** | Agent-Based Modeling for real-time traffic and citizen behavior. |
 | **AI Advisor** | **Ollama (Gemma 4)** | Professional urban policy auditing and strategic reporting. |
 
-> [!NOTE]
-> For a deep dive into the internal data flow and directory structure, see [SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTURE.md).
+---
+
+## 🚀 Advanced Command Features (v6.0)
+
+### **1. 🗺️ CITY-WIDE UNDERGROUND X-RAY**
+- **Unified Infrastructure Mapping**: High-density visualization of over **6,000+ utility features** across the entire Bengaluru map.
+- **Color-Coded Vitale**: Real-time tracking of the Power Grid (White), Water Mains (Blue), Gas Pipelines (Orange), and Sewage Systems (Yellow).
+- **Ground-Locked Precision**: Native MapLibre rendering ensures infrastructure is pinned to the city floor without perspective drift.
+
+### **2. 🏗️ URBAN SANDBOX & REPURPOSING**
+- **One-Click Transformation**: Select any building on the map and immediately "reply" by repurposing it into Education Centers, Healthcare Hubs, or Smart Towers.
+- **Multi-Selection Engine**: Advanced **Shift-Click** support for batch-managing urban assets and executing large-scale demolitions or upgrades.
+- **Impact Projections**: Instant holographic reports showing economic (Prosperity) and social (Happiness) shifts for every structural change.
+
+### **3. 🤖 STRATEGIC DIRECTIVES & AI**
+- **Nexus AI Advisor**: Professional urban policy auditing with dynamic viability scoring and PDF report generation.
+- **Fiscal Transparency**: Precise budget management with multi-unit support (Lakh / Crore) and automated ROI calculation.
+- **Global Broadcast**: Real-time deployment of city-wide governance alerts across the citizen notification network.
+
+### **4. 🚨 CRISIS & SIMULATION**
+- **3D Flood Modeling**: Dynamic monsoon inundation tracking with real-time risk scoring and adaptive agent pathfinding.
+- **Agent Physics**: Real-time traffic and pedestrian modeling that responds to atmospheric conditions (Rain, Smog).
 
 ---
 
----
-
-## 🚀 Advanced Command Features (v5.0)
-
-### **1. 🏗️ ARCHITECTURAL BUILDER**
-- **Adaptive Command Hub**: High-fidelity asset placement (Metros, Highways, Skyscrapers, Medical Centers).
-- **Intelligent Sidebar**: State-aware UI that expands for selection and auto-collapses for focus.
-- **Impact Visualizer**: Real-time conflict detection with existing utility infrastructure.
-
-### **2. 🤖 STRATEGIC DIRECTIVES**
-- **Nexus AI Advisor**: Professional urban policy auditing using `gemma4:e4b`.
-- **Global Broadcast**: Real-time deployment of city-wide governance alerts and incident reports.
-
-### **3. 🚨 CRISIS & SIMULATION**
-- **3D Flood Modeling**: Dynamic monsoon inundation tracking with real-time risk scoring.
-- **Agent Physics**: Real-time traffic and pedestrian modeling using a custom ABM engine.
-
-### **4. 👥 CITIZEN ENGAGEMENT**
-- **Public Request Pulse**: Live tracking of citizen grievances (potholes, accidents) on the unified map.
-- **Sentiment Heatmaps**: WebGL-accelerated visualization of community feedback across Bengaluru wards.
-
----
-
-## ⚡ ADMINISTRATIVE "GOD MODE"
-*   **Global Grid Lock**: Instant Traffic Paralysis simulation for emergency drill testing.
-*   **Atmospheric Control**: Real-time Rainfall and Smog density toggles that affect agent behavior.
-*   **Chain Reaction Visualizer**: Pulsing ripple effects showing the spatial impact of new urban developments.
+## 🏛️ DATA PERSISTENCE
+The platform is powered by a robust **Supabase + PostGIS** backend. 
+See [SUPABASE_SCHEMA.md](./SUPABASE_SCHEMA.md) for the full SQL initialization scripts covering:
+*   3D Building Footprints & Status Tracking
+*   Persistent Custom Asset Placements
+*   City-Wide Sentiment Mapping
+*   Strategic Policy Logs
 
 ---
 
@@ -83,4 +83,4 @@ npm run dev
 
 ---
 
-> *"The future of urban governance is not in papers, but in pixels."* - **BENGALURU NEXUS CMD v4.2**
+> *"The future of urban governance is not in papers, but in pixels."* - **BENGALURU NEXUS CMD v6.0**
