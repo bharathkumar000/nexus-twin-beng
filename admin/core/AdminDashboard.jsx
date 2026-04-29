@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import { ScatterplotLayer, ColumnLayer, LineLayer } from '@deck.gl/layers';
+import { ScatterplotLayer, ColumnLayer, LineLayer, PolygonLayer } from '@deck.gl/layers';
 import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 import { TripsLayer } from '@deck.gl/geo-layers';
 
@@ -66,6 +66,8 @@ const AdminDashboard = () => {
   const [sentimentEnabled, setSentimentEnabled] = useState(false);
   const [sentimentData, setSentimentData] = useState(null);
   const [isDemolishMode, setIsDemolishMode] = useState(false);
+  const [selectedBuildings, setSelectedBuildings] = useState([]);
+  const [selectedGridCell, setSelectedGridCell] = useState(null);
 
   const [viewState, setViewState] = useState({
     longitude: 77.5912, latitude: 12.9797, zoom: 14, pitch: 55, bearing: 0
@@ -78,34 +80,42 @@ const AdminDashboard = () => {
   const onWebGLInitialized = (gl) => { setGlContext(gl); setGraphicsReady(true); };
 
   useEffect(() => {
-    let requestRef;
-    const animate = () => {
+    // Throttle agent logic to 10 FPS to prevent crushing React's render loop
+    const timerId = setInterval(() => {
       setAgents(prev => updateAgents(prev, { isRainy, placedAssets }));
       setTime(t => t + 1);
-      requestRef = requestAnimationFrame(animate);
-    };
-    requestRef = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(requestRef);
+    }, 100);
+    return () => clearInterval(timerId);
   }, [isRainy, placedAssets]);
 
   const generateGrid = () => {
-    const lines = [];
-    const step = 0.0005;
-    const range = 0.02; // Show grid around center
-    const centerLng = Math.round(viewState.longitude / step) * step;
-    const centerLat = Math.round(viewState.latitude / step) * step;
+    const cells = [];
+    const step = 0.0005; // ~50m cells
+    const range = 30; // Increased range for better coverage
+    
+    // Static anchoring: Round to the nearest 0.01 to create a "stable" local origin
+    // This prevents the grid from "following" the camera center every frame
+    const anchorLng = Math.floor(viewState.longitude / 0.01) * 0.01;
+    const anchorLat = Math.floor(viewState.latitude / 0.01) * 0.01;
 
-    for (let i = -20; i <= 20; i++) {
-      lines.push({
-        start: [centerLng - range, centerLat + i * step],
-        end: [centerLng + range, centerLat + i * step]
-      });
-      lines.push({
-        start: [centerLng + i * step, centerLat - range],
-        end: [centerLng + i * step, centerLat + range]
-      });
+    for (let x = -range; x <= range; x++) {
+      for (let y = -range; y <= range; y++) {
+        const lng = anchorLng + x * step;
+        const lat = anchorLat + y * step;
+        cells.push({
+          id: `${lng.toFixed(5)},${lat.toFixed(5)}`,
+          lngLat: { lng, lat },
+          polygon: [
+            [lng, lat],
+            [lng + step, lat],
+            [lng + step, lat + step],
+            [lng, lat + step],
+            [lng, lat]
+          ]
+        });
+      }
     }
-    return lines;
+    return cells;
   };
 
   const flyTo = (lngLat) => {
@@ -120,14 +130,20 @@ const AdminDashboard = () => {
   };
 
   const layers = [
-    activeCategory === 'builder' ? new LineLayer({
-      id: 'grid-layer',
+    new PolygonLayer({
+      id: 'minecraft-grid-layer',
       data: generateGrid(),
-      getSourcePosition: d => d.start,
-      getTargetPosition: d => d.end,
-      getColor: [255, 255, 255, 80], // White grid for Minecraft builder vibe
-      getWidth: 1.5
-    }) : null,
+      getPolygon: d => d.polygon,
+      stroked: true,
+      filled: true,
+      getLineColor: [255, 255, 255, 50],
+      getFillColor: d => selectedGridCell === d.id ? [37, 99, 235, 100] : [0, 0, 0, 0],
+      lineWidthMinPixels: 1,
+      pickable: true,
+      onClick: ({ object }) => {
+        if (object) setSelectedGridCell(object.id);
+      }
+    }),
     sentimentEnabled && sentimentData ? new HeatmapLayer({
       id: 'sentiment-heatmap', 
       data: sentimentData.points, 
@@ -224,27 +240,28 @@ const AdminDashboard = () => {
       }
     }
 
-    // 2. Score based on form completeness - more fields filled = higher score
-    setTimeout(() => {
-      let filled = 0;
-      if (policyForm.title) filled++;
-      if (policyForm.location) filled++;
-      if (policyForm.budget) filled++;
-      if (policyForm.duration) filled++;
-      if (policyForm.impactTraffic) filled++;
-      if (policyForm.impactUnderground) filled++;
-      if (policyForm.outcome) filled++;
-      if (policyForm.lngLat) filled++;
-      if (policyPdfFile) filled++;
-      
-      const completeness = filled / 9;
-      const base = Math.floor(completeness * 50) + 40; // 40-90 base
-      const variance = Math.floor(Math.random() * 10);
-      const score = Math.min(99, base + variance);
-      
-      setAiPolicyScore(score);
-      setIsAnalyzingPolicy(false);
-    }, 2500);
+    // 2. Artificial delay for simulation effect
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // 3. Score based on form completeness - more fields filled = higher score
+    let filled = 0;
+    if (policyForm.title) filled++;
+    if (policyForm.location) filled++;
+    if (policyForm.budget) filled++;
+    if (policyForm.duration) filled++;
+    if (policyForm.impactTraffic) filled++;
+    if (policyForm.impactUnderground) filled++;
+    if (policyForm.outcome) filled++;
+    if (policyForm.lngLat) filled++;
+    if (policyPdfFile) filled++;
+    
+    const completeness = filled / 9;
+    const base = Math.floor(completeness * 50) + 40; // 40-90 base
+    const variance = Math.floor(Math.random() * 10);
+    const score = Math.min(99, base + variance);
+    
+    setAiPolicyScore(score);
+    setIsAnalyzingPolicy(false);
   };
 
   const handleBroadcastPolicy = async () => {
@@ -262,23 +279,23 @@ const AdminDashboard = () => {
     } catch (err) {
       console.warn('Notification POST failed (server may be offline):', err.message);
     }
-    setTimeout(() => {
-      setIsBroadcasting(false);
-      setActiveNotification({
-        id: Date.now(),
-        type: 'GLOBAL_DIRECTIVE',
-        title: policyForm.title || 'URBAN POLICY DEPLOYMENT',
-        data: policyForm,
-        score: aiPolicyScore,
-        timestamp: new Date().toLocaleTimeString()
-      });
-      setPolicyForm({ title: '', location: '', budget: '', duration: '', impactUnderground: '', impactTraffic: '', outcome: '', lngLat: null });
-      setAiPolicyScore(null);
-      setPolicyPdfFile(null);
-      setPolicyLocationPicking(false);
-      setLocationSearchResults([]);
-      alert('✅ POLICY DEPLOYED! Notification sent to all citizens.');
-    }, 1500);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    setIsBroadcasting(false);
+    setActiveNotification({
+      id: Date.now(),
+      type: 'GLOBAL_DIRECTIVE',
+      title: policyForm.title || 'URBAN POLICY DEPLOYMENT',
+      data: policyForm,
+      score: aiPolicyScore,
+      timestamp: new Date().toLocaleTimeString()
+    });
+    setPolicyForm({ title: '', location: '', budget: '', duration: '', impactUnderground: '', impactTraffic: '', outcome: '', lngLat: null });
+    setAiPolicyScore(null);
+    setPolicyPdfFile(null);
+    setPolicyLocationPicking(false);
+    setLocationSearchResults([]);
+    alert('✅ POLICY DEPLOYED! Notification sent to all citizens.');
   };
 
   // Location helpers for Policy Hub
@@ -382,6 +399,17 @@ const AdminDashboard = () => {
         isXrayEnabled={isXrayEnabled}
         onMapLoad={(m) => { mapRef.current = m; setMapLoaded(true); }}
         onWebGLInitialized={onWebGLInitialized}
+        onBuildingClick={(building) => {
+          if (building.isShiftPressed) {
+            setSelectedBuildings(prev => {
+              if (prev.find(b => b.id === building.id)) return prev.filter(b => b.id !== building.id);
+              return [...prev, building];
+            });
+          } else {
+            setSelectedBuildings([building]);
+          }
+        }}
+        selectedBuildingIds={selectedBuildings.map(b => b.id)}
       >
         {isSplitScreen && <div className="split-divider" />}
       </MapLayout>

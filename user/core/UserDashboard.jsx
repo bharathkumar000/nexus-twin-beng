@@ -28,6 +28,7 @@ const UserDashboard = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [currentStyle, setCurrentStyle] = useState('streets');
   const [isXrayEnabled, setIsXrayEnabled] = useState(false);
+  const [selectedBuildings, setSelectedBuildings] = useState([]);
 
   const [floodLevel, setFloodLevel] = useState(0);
   const [timelineYear, setTimelineYear] = useState(2024);
@@ -127,6 +128,17 @@ const UserDashboard = () => {
         isXrayEnabled={isXrayEnabled}
         onMapLoad={(m) => { mapRef.current = m; setMapLoaded(true); }}
         onWebGLInitialized={onWebGLInitialized}
+        onBuildingClick={(building) => {
+          if (building.isShiftPressed) {
+            setSelectedBuildings(prev => {
+              if (prev.find(b => b.id === building.id)) return prev.filter(b => b.id !== building.id);
+              return [...prev, building];
+            });
+          } else {
+            setSelectedBuildings([building]);
+          }
+        }}
+        selectedBuildingIds={selectedBuildings.map(b => b.id)}
       />
 
       <div className="search-container">

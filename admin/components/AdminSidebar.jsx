@@ -140,26 +140,7 @@ const AdminSidebar = ({
 
           {activeCategory === 'strategy' && (
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-              <div className="panel-section" style={{ marginBottom: '2rem' }}>
-                <span className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}><Activity size={14} /> DECISION CONFIDENCE METER</span>
-                <div className="widget" style={{ padding: '1.5rem', background: 'rgba(37,99,235,0.03)', border: '1px solid var(--accent-glass)', textAlign: 'center', marginTop: '1rem' }}>
-                  <div style={{ fontSize: '2.5rem', fontWeight: 800, color: globalConfidence > 70 ? 'var(--success)' : globalConfidence > 40 ? 'var(--warning)' : 'var(--danger)' }}>{globalConfidence}%</div>
-                  <span style={{ fontSize: '0.65rem', fontWeight: 900, letterSpacing: '2px', opacity: 0.8 }}>{globalConfidence > 70 ? '🟢 SAFE_STATUS' : globalConfidence > 40 ? '🟡 MODERATE_RISK' : '🔴 CRITICAL_RISK'}</span>
-                  <button className="action-btn" onClick={() => handleAction(handleAiSuggest)} style={{ marginTop: '1.5rem', background: 'var(--accent)', color: '#fff' }}>AI: SUGGEST BEST PLAN</button>
-                  {aiSuggestion && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} style={{ marginTop: '1rem', padding: '0.75rem', background: 'rgba(37,99,235,0.1)', borderRadius: '10px', fontSize: '0.7rem', fontStyle: 'italic', color: 'var(--accent)', borderLeft: '3px solid var(--accent)' }}>" {aiSuggestion.text} "</motion.div>
-                  )}
-                </div>
-              </div>
 
-              <div className="panel-section" style={{ marginBottom: '2rem' }}>
-                <span className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}><History size={14} /> TIME TRAVEL HORIZON</span>
-                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-                  {['past', 'present', 'future'].map(t => (
-                    <button key={t} onClick={() => handleAction(() => setTimeHorizon(t))} className={`tab-btn ${timeHorizon === t ? 'active' : ''}`} style={{ flex: 1, fontSize: '0.6rem' }}>{t.toUpperCase()}</button>
-                  ))}
-                </div>
-              </div>
 
               <div className="panel-section" style={{ marginBottom: '2rem' }}>
                 <span className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}><Target size={14} /> STRATEGIC PRIORITY</span>
@@ -192,48 +173,7 @@ const AdminSidebar = ({
                 </div>
               </div>
 
-              {/* 6. STRATEGIC POLICY HUB */}
-              <div className="panel-section">
-                <span className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}>
-                  <FileText size={14} /> STRATEGIC_POLICY_HUB
-                </span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem', padding: '1rem', background: '#ffffff', borderRadius: '12px', border: '1px solid var(--glass-border)', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
-                  
-                  {/* Title & Location */}
-                  <input className="chat-mini" placeholder="Policy Title (e.g., Underground Metro Extension)" value={policyForm.title || ''} onChange={e => setPolicyForm({...policyForm, title: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.75rem', color: '#333' }} />
-                  <input className="chat-mini" placeholder="Target Location" value={policyForm.location || ''} onChange={e => setPolicyForm({...policyForm, location: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.75rem', color: '#333' }} />
-                  
-                  {/* Budget & Timeline */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                    <input className="chat-mini" placeholder="Budget (₹)" value={policyForm.budget || ''} onChange={e => setPolicyForm({...policyForm, budget: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.75rem', color: '#333' }} />
-                    <input className="chat-mini" placeholder="Timeline (Months)" value={policyForm.duration || ''} onChange={e => setPolicyForm({...policyForm, duration: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.75rem', color: '#333' }} />
-                  </div>
 
-                  {/* Impact Projections Box */}
-                  <div style={{ padding: '1rem', background: 'rgba(37,99,235,0.03)', borderRadius: '12px', border: '1px solid rgba(37,99,235,0.2)', marginTop: '0.25rem' }}>
-                    <span style={{ fontSize: '0.6rem', fontWeight: 900, color: 'var(--accent)', display: 'block', marginBottom: '0.75rem', letterSpacing: '0.5px' }}>IMPACT_PROJECTIONS</span>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      <input className="chat-mini" placeholder="Traffic Disruption Estimate" value={policyForm.impactTraffic || ''} onChange={e => setPolicyForm({...policyForm, impactTraffic: e.target.value})} style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: 'none', background: '#fff', fontSize: '0.7rem', color: '#333', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }} />
-                      <input className="chat-mini" placeholder="Underground Utilities Risk" value={policyForm.impactUnderground || ''} onChange={e => setPolicyForm({...policyForm, impactUnderground: e.target.value})} style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: 'none', background: '#fff', fontSize: '0.7rem', color: '#333', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }} />
-                    </div>
-                  </div>
-
-                  {/* Expected Outcome */}
-                  <textarea className="chat-mini" placeholder="Expected Outcome & ROI..." value={policyForm.outcome || ''} onChange={e => setPolicyForm({...policyForm, outcome: e.target.value})} style={{ width: '100%', minHeight: '80px', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '0.75rem', color: '#333', resize: 'none', marginTop: '0.25rem' }} />
-
-                  {/* File Upload Option */}
-                  <div style={{ position: 'relative', marginTop: '0.25rem' }}>
-                    <input type="file" id="policy-doc-upload" style={{ display: 'none' }} onChange={(e) => console.log('File selected:', e.target.files[0])} />
-                    <label htmlFor="policy-doc-upload" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px dashed var(--accent)', background: 'rgba(37,99,235,0.02)', color: 'var(--accent)', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer', transition: '0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(37,99,235,0.08)'} onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(37,99,235,0.02)'}>
-                      <UploadCloud size={16} /> ATTACH PROJECT DOSSIER / CAD FILES
-                    </label>
-                  </div>
-
-                  <button className="action-btn" onClick={() => handleAction(handleBroadcastPolicy)} disabled={isBroadcasting} style={{ background: 'var(--accent)', marginTop: '0.5rem', height: '45px', fontSize: '0.75rem', borderRadius: '8px' }}>
-                    {isBroadcasting ? <Loader2 className="spin" size={16} /> : 'ANALYZE & DEPLOY DIRECTIVE'}
-                  </button>
-                </div>
-              </div>
             </motion.div>
           )}
 
