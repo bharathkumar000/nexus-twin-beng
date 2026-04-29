@@ -190,20 +190,23 @@ const AdminDashboard = () => {
   const gridData = React.useMemo(() => {
     const features = [];
     const step = 0.0005; // ~50m cells
-    const range = 35; // Expand range for better coverage
+    const range = 100; // Large coverage for Bangalore
     
-    const anchorLng = Math.floor(viewState.longitude / 0.01) * 0.01;
-    const anchorLat = Math.floor(viewState.latitude / 0.01) * 0.01;
+    // Fixed origin anchoring to Vidhana Soudha (77.5912, 12.9797)
+    // This ensures the grid is globally stable and doesn't shift when the map moves
+    const fixedAnchorLng = 77.5912;
+    const fixedAnchorLat = 12.9797;
 
     let idCounter = 1;
     for (let x = -range; x <= range; x++) {
       for (let y = -range; y <= range; y++) {
-        const lng = anchorLng + x * step;
-        const lat = anchorLat + y * step;
+        const lng = fixedAnchorLng + x * step;
+        const lat = fixedAnchorLat + y * step;
+        
         features.push({
           type: 'Feature',
           id: idCounter++, 
-          properties: { id: idCounter - 1, lng, lat },
+          properties: { id: idCounter - 1, lng, lat, major: (x % 5 === 0 && y % 5 === 0) },
           geometry: {
             type: 'Polygon',
             coordinates: [[
@@ -218,7 +221,7 @@ const AdminDashboard = () => {
       }
     }
     return { type: 'FeatureCollection', features };
-  }, [viewState.longitude, viewState.latitude]);
+  }, []); // Remove dependencies to keep it perfectly fixed across the land
 
   const flyTo = (lngLat) => {
     setViewState(prev => ({
