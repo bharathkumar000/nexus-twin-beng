@@ -1,4 +1,4 @@
-import { MapPin, Camera, MessageSquare, AlertCircle, Bell, TrendingUp, RefreshCw, X, ShieldAlert, Globe, CheckCircle2, Clock, ArrowUpCircle } from 'lucide-react';
+import { MapPin, Camera, MessageSquare, AlertCircle, Bell, TrendingUp, RefreshCw, X, ShieldAlert, Globe, CheckCircle2, Clock, ArrowUpCircle, Search } from 'lucide-react';
 import React, { useState, useRef } from 'react';
 import { Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -9,8 +9,16 @@ const UserSidebar = ({
   handleFileComplaint = async () => {},
   notifications = [],
   myReports = [],
-  handleUpvote = () => {}
+  handleUpvote = () => {},
+  activeTab = 'notifications' // Default tab
 }) => {
+  const [currentTab, setCurrentTab] = useState(activeTab);
+
+  // Sync internal state with prop
+  React.useEffect(() => {
+    setCurrentTab(activeTab);
+  }, [activeTab]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [complaintForm, setComplaintForm] = useState({ 
     type: 'Water Supply', 
     description: '', 
@@ -52,6 +60,17 @@ const UserSidebar = ({
     setIsSubmitting(false);
   };
 
+  const filteredNotifications = notifications.filter(n => 
+    (n.policy_title || n.policy)?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    n.purpose?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredReports = myReports.filter(r => 
+    r.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    r.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    r.status?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className={`side-panel ${isSidebarCollapsed ? 'collapsed' : 'expanded'}`}>
       <div className="scanline" />
@@ -83,19 +102,56 @@ const UserSidebar = ({
 
       <div className="widget content-widget" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
         <div className="scroll-area" style={{ flex: 1, padding: '1.25rem' }}>
+
+          <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
+            <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+            <input 
+              type="text"
+              placeholder="Search Reports & Directives..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              style={{ width: '100%', padding: '0.6rem 0.6rem 0.6rem 2rem', background: 'rgba(0,0,0,0.03)', border: '1px solid var(--glass-border)', borderRadius: '8px', fontSize: '0.65rem', fontWeight: 700 }}
+            />
+          </div>
           
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+            <button 
+              onClick={() => setCurrentTab('notifications')}
+              style={{ 
+                flex: 1, padding: '0.6rem', borderRadius: '8px', fontSize: '0.65rem', fontWeight: 900,
+                background: currentTab === 'notifications' ? 'var(--accent)' : 'rgba(0,0,0,0.03)',
+                color: currentTab === 'notifications' ? '#fff' : 'var(--text-secondary)',
+                border: 'none', transition: 'all 0.2s'
+              }}
+            >
+              ALERTS
+            </button>
+            <button 
+              onClick={() => setCurrentTab('complaints')}
+              style={{ 
+                flex: 1, padding: '0.6rem', borderRadius: '8px', fontSize: '0.65rem', fontWeight: 900,
+                background: currentTab === 'complaints' ? 'var(--accent)' : 'rgba(0,0,0,0.03)',
+                color: currentTab === 'complaints' ? '#fff' : 'var(--text-secondary)',
+                border: 'none', transition: 'all 0.2s'
+              }}
+            >
+              REPORT
+            </button>
+          </div>
+
+          {currentTab === 'notifications' && (
           <div className="panel-section" style={{ marginBottom: '2rem' }}>
             <span className="section-label" style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: 900, fontSize: '0.6rem', letterSpacing: '1px' }}>
               <Bell size={14} strokeWidth={2.5} /> NEXUS_DIRECTIVE_FEED
             </span>
             <div style={{ marginTop: '1rem', maxHeight: '350px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingRight: '0.5rem' }} className="scroll-area">
-              {notifications.length === 0 && (
+              {filteredNotifications.length === 0 && (
                 <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.4 }}>
                   <Bell size={24} style={{ marginBottom: '0.5rem' }} />
                   <p style={{ fontSize: '0.6rem', fontWeight: 800 }}>NO_ACTIVE_DIRECTIVES</p>
                 </div>
               )}
-              {notifications.map(n => (
+              {filteredNotifications.map(n => (
                 <motion.div 
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -122,7 +178,10 @@ const UserSidebar = ({
               ))}
             </div>
           </div>
+          )}
 
+          {currentTab === 'complaints' && (
+          <>
           <div className="panel-section" style={{ marginBottom: '2rem' }}>
             <span className="section-label" style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: 900, fontSize: '0.6rem', letterSpacing: '1px' }}>
               <MessageSquare size={14} strokeWidth={2.5} /> COMPLAINT_INITIALIZATION_BOX
@@ -211,13 +270,13 @@ const UserSidebar = ({
               <CheckCircle2 size={14} strokeWidth={2.5} /> PUBLIC_REPORTS_&_UPVOTING
             </span>
             <div style={{ marginTop: '1rem', maxHeight: '300px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingRight: '0.5rem' }} className="scroll-area">
-              {myReports.length === 0 && (
+              {filteredReports.length === 0 && (
                 <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.4 }}>
                   <MessageSquare size={24} style={{ marginBottom: '0.5rem' }} />
-                  <p style={{ fontSize: '0.6rem', fontWeight: 800 }}>NO_REPORTS_FILED</p>
+                  <p style={{ fontSize: '0.6rem', fontWeight: 800 }}>NO_REPORTS_FOUND</p>
                 </div>
               )}
-              {myReports.map(report => (
+              {filteredReports.map(report => (
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -240,7 +299,7 @@ const UserSidebar = ({
                       color: report.status === 'resolved' ? 'var(--success)' : '#f59e0b',
                       whiteSpace: 'nowrap' 
                     }}>
-                      {report.status.toUpperCase()}
+                      {(report.status || 'PENDING').toUpperCase()}
                     </span>
                   </div>
                   
@@ -275,8 +334,8 @@ const UserSidebar = ({
               ))}
             </div>
           </div>
-
-        </div>
+          </>
+          )}
       </div>
     </div>
   );

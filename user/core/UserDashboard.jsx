@@ -49,12 +49,14 @@ const UserDashboard = () => {
   const [viewState, setViewState] = useState({
     longitude: 77.5912, latitude: 12.9797, zoom: 14, pitch: 55, bearing: 0
   });
+  const [activeSidebarTab, setActiveSidebarTab] = useState('notifications');
 
   const onWebGLInitialized = (gl) => { setGlContext(gl); setGraphicsReady(true); };
 
   const fetchRequests = async () => {
       try {
-        const res = await axios.get('http://localhost:3001/api/complaints');
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+        const res = await axios.get(`${apiBase}/api/complaints`);
         setPublicRequests(res.data);
       } catch (err) { 
         console.warn("Nexus Command Core offline. Using local simulation for complaints.");
@@ -74,7 +76,8 @@ const UserDashboard = () => {
   useEffect(() => {
     const fetchNotifs = async () => {
       try {
-        const res = await axios.get('http://localhost:3001/api/notifications');
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+        const res = await axios.get(`${apiBase}/api/notifications`);
         setAllNotifications(res.data);
         if (res.data.length > 0) {
           const newest = res.data[0];
@@ -140,15 +143,14 @@ const UserDashboard = () => {
     setIsSearching(false);
   };
 
-  const handleFileComplaint = async (form) => {
-    const formData = new FormData();
-    formData.append('type', form.type);
-    formData.append('description', form.description);
-    if (form.photo) formData.append('photo', form.photo);
-    
+  const handleFileComplaint = async (complaintForm) => {
     try {
-      const res = await axios.post('http://localhost:3001/api/complaints', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+      const res = await axios.post(`${apiBase}/api/complaints`, {
+        type: complaintForm.type,
+        location: complaintForm.location,
+        description: complaintForm.description,
+        lngLat: complaintForm.lngLat
       });
       if (res.data.success) {
         alert("COMPLAINT_FILED: Nexus Twin Command notified.");
@@ -164,7 +166,8 @@ const UserDashboard = () => {
 
   const handleUpvote = async (id) => {
     try {
-      const res = await axios.post(`http://localhost:3001/api/complaints/${id}/upvote`);
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+      const res = await axios.post(`${apiBase}/api/complaints/${id}/upvote`);
       if (res.data.success) {
         fetchRequests(); // Refresh the list
       }
@@ -221,6 +224,7 @@ const UserDashboard = () => {
         notifications={allNotifications}
         myReports={publicRequests}
         handleUpvote={handleUpvote}
+        activeTab={activeSidebarTab}
       />
 
       <UserDock 
@@ -228,6 +232,7 @@ const UserDashboard = () => {
         currentStyle={currentStyle} setCurrentStyle={setCurrentStyle}
         handleLogout={handleLogout}
         setIsSidebarCollapsed={setIsSidebarCollapsed}
+        setActiveSidebarTab={setActiveSidebarTab}
       />
     </div>
   );

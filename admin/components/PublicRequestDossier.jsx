@@ -16,10 +16,10 @@ const PublicRequestDossier = ({ selectedRequest, setSelectedRequest, setPublicRe
           <div className="widget" style={{ width: '450px', padding: '2rem', border: '1px solid var(--accent)', background: '#fff', boxShadow: '0 20px 60px rgba(37,99,235,0.2)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
               <div>
-                <h2 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--accent)', letterSpacing: '2px' }}>{selectedRequest.type.toUpperCase()}</h2>
+                <h2 style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--accent)', letterSpacing: '2px' }}>{(selectedRequest.type || 'GRIEVANCE').toUpperCase()}</h2>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
                   <MapPin size={14} color="var(--text-secondary)" />
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{selectedRequest.location}</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{selectedRequest.location || 'Bengaluru'}</span>
                 </div>
               </div>
               <button onClick={() => setSelectedRequest(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={20} /></button>
@@ -28,11 +28,11 @@ const PublicRequestDossier = ({ selectedRequest, setSelectedRequest, setPublicRe
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
               <div style={{ padding: '1rem', background: 'rgba(0,0,0,0.02)', borderRadius: '12px' }}>
                 <span style={{ fontSize: '0.5rem', color: 'var(--text-secondary)', fontWeight: 800 }}>SEVERITY_LVL</span>
-                <p style={{ fontSize: '0.8rem', fontWeight: 900, marginTop: '0.2rem', color: selectedRequest.severity === 'High' ? 'var(--danger)' : 'var(--warning)' }}>{selectedRequest.severity.toUpperCase()}</p>
+                <p style={{ fontSize: '0.8rem', fontWeight: 900, marginTop: '0.2rem', color: selectedRequest.severity === 'High' ? 'var(--danger)' : 'var(--warning)' }}>{(selectedRequest.severity || 'MEDIUM').toUpperCase()}</p>
               </div>
               <div style={{ padding: '1rem', background: 'rgba(0,0,0,0.02)', borderRadius: '12px' }}>
                 <span style={{ fontSize: '0.5rem', color: 'var(--text-secondary)', fontWeight: 800 }}>CURRENT_STATUS</span>
-                <p style={{ fontSize: '0.8rem', fontWeight: 900, marginTop: '0.2rem' }}>{selectedRequest.status.toUpperCase()}</p>
+                <p style={{ fontSize: '0.8rem', fontWeight: 900, marginTop: '0.2rem' }}>{(selectedRequest.status || 'PENDING').toUpperCase()}</p>
               </div>
             </div>
 

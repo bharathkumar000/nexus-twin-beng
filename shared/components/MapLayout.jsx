@@ -22,6 +22,29 @@ const MapLayout = ({
   const mapContainer = useRef(null);
   const map = useRef(null);
 
+  const [mapLoaded, setMapLoaded] = React.useState(false);
+
+  // 1. REACTIVE X-RAY TOGGLE
+  useEffect(() => {
+    if (!map.current || !mapLoaded) return;
+    
+    const xrayLayers = ['3d-buildings', 'road-label', 'settlement-label', 'poi-label', 'water-name', 'natural-label'];
+    xrayLayers.forEach(layer => {
+      if (map.current.getLayer(layer)) {
+        map.current.setLayoutProperty(layer, 'visibility', isXrayEnabled ? 'none' : 'visible');
+      }
+    });
+
+    // Darken the background for X-Ray
+    if (map.current.getLayer('water')) {
+      map.current.setPaintProperty('water', 'fill-color', isXrayEnabled ? '#0a0b1b' : '#d2e4f0');
+    }
+    if (map.current.getLayer('background')) {
+      map.current.setPaintProperty('background', 'background-color', isXrayEnabled ? '#050608' : '#f8f4f0');
+    }
+  }, [isXrayEnabled, mapLoaded]);
+
+  // 2. INITIALIZATION
   useEffect(() => {
     if (map.current) return;
     map.current = new maplibregl.Map({
@@ -46,7 +69,7 @@ const MapLayout = ({
           { id: 'street-tiles', type: 'raster', source: 'google-roads', layout: { visibility: 'none' } },
           { id: 'xray-dark-tiles', type: 'raster', source: 'dark-blueprint', layout: { visibility: 'none' }, paint: { 'raster-opacity': 0.8 } },
           
-          // MINECRAFT GRID — rendered on the ground (first in stack)
+          // MINECRAFT GRID
           {
             id: 'minecraft-grid',
             type: 'fill',
@@ -75,12 +98,7 @@ const MapLayout = ({
             source: 'utilities',
             paint: {
               'line-width': ['interpolate', ['linear'], ['zoom'], 12, 1, 15, 3, 18, 12],
-              'line-color': ['match', ['get', 'type'], 
-                'WaterPipe', '#2563eb', 
-                'SewagePipe', '#facc15', 
-                'GasLine', '#f97316', 
-                'ElectricityLine', '#ffffff',
-                '#ffffff'],
+              'line-color': ['match', ['get', 'type'], 'WaterPipe', '#2563eb', 'SewagePipe', '#facc15', 'GasLine', '#f97316', 'ElectricityLine', '#ffffff', '#ffffff'],
               'line-opacity': 0,
               'line-blur': 0.5
             }
@@ -91,18 +109,12 @@ const MapLayout = ({
             source: 'utilities',
             paint: {
               'line-width': ['interpolate', ['linear'], ['zoom'], 12, 4, 18, 20],
-              'line-color': ['match', ['get', 'type'], 
-                'WaterPipe', '#2563eb', 
-                'SewagePipe', '#facc15', 
-                'GasLine', '#f97316', 
-                'ElectricityLine', '#ffffff',
-                '#ffffff'],
+              'line-color': ['match', ['get', 'type'], 'WaterPipe', '#2563eb', 'SewagePipe', '#facc15', 'GasLine', '#f97316', 'ElectricityLine', '#ffffff', '#ffffff'],
               'line-opacity': 0,
               'line-blur': 10
             }
           },
           
-          // 3D BUILDINGS — rendered natively inside MapLibre so they NEVER drift
           {
             id: '3d-buildings',
             type: 'fill-extrusion',
@@ -110,18 +122,9 @@ const MapLayout = ({
             paint: {
               'fill-extrusion-color': [
                 'case',
-                ['boolean', ['feature-state', 'selected'], false],
-                '#2563eb',  // Selected = blue highlight
-                ['boolean', ['feature-state', 'hover'], false],
-                '#60a5fa',  // Hover = lighter blue
-                [
-                  'interpolate', ['linear'], ['get', 'height'],
-                  0, '#e8e4de',
-                  5, '#d8d2ca',
-                  10, '#c8c0b6',
-                  20, '#b8aea2',
-                  40, '#a89e90'
-                ]
+                ['boolean', ['feature-state', 'selected'], false], '#2563eb',
+                ['boolean', ['feature-state', 'hover'], false], '#60a5fa',
+                ['interpolate', ['linear'], ['get', 'height'], 0, '#e8e4de', 5, '#d8d2ca', 10, '#c8c0b6', 20, '#b8aea2', 40, '#a89e90']
               ],
               'fill-extrusion-height': ['coalesce', ['get', 'height'], 6],
               'fill-extrusion-base': 0,
@@ -138,38 +141,27 @@ const MapLayout = ({
       antialias: true
     });
 
-    let hoveredId = null;
-
     map.current.on('load', () => {
+      setMapLoaded(true);
+      if (onMapLoad) onMapLoad(map.current);
+      
       // Grid selection
       map.current.on('click', 'minecraft-grid', (e) => {
-        if (e.originalEvent._buildingClicked) return; // Prevent double trigger
-        e.originalEvent._gridClicked = true; // Mark as grid click
+        if (e.originalEvent._buildingClicked) return;
+        e.originalEvent._gridClicked = true;
         if (e.features.length > 0 && onGridClick) {
           const props = e.features[0].properties;
-          onGridClick({
-            id: props.id,
-            lngLat: { lng: props.lng, lat: props.lat }
-          });
+          onGridClick({ id: props.id, lngLat: { lng: props.lng, lat: props.lat } });
         }
       });
 
-      // Fallback click for map (if grid is not hit or too small)
       map.current.on('click', (e) => {
-        // If we hit a building, don't trigger map click logic
-        if (e.originalEvent._buildingClicked) return;
-        
-        // If we didn't hit the grid, but we have onGridClick
-        if (!e.originalEvent._gridClicked && onGridClick) {
-          // Snap to a virtual grid of 0.0005 for consistency
+        if (e.originalEvent._buildingClicked || e.originalEvent._gridClicked) return;
+        if (onGridClick) {
           const step = 0.0005;
           const snappedLng = Math.round(e.lngLat.lng / step) * step;
           const snappedLat = Math.round(e.lngLat.lat / step) * step;
-          
-          onGridClick({
-            id: `v-${Date.now()}`,
-            lngLat: { lng: snappedLng, lat: snappedLat }
-          });
+          onGridClick({ id: `v-${Date.now()}`, lngLat: { lng: snappedLng, lat: snappedLat } });
         }
       });
 

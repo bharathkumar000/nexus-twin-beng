@@ -42,7 +42,7 @@ const AdminDock = ({
             const nextIndex = (styles.indexOf(currentStyle) + 1) % styles.length;
             setCurrentStyle(styles[nextIndex]);
           }}>
-          <Layers size={18} /><span>{currentStyle.toUpperCase()}</span>
+          <Layers size={18} /><span>{(currentStyle || 'SATELLITE').toUpperCase()}</span>
         </button>
         <button className="dock-btn danger" onClick={handleLogout} style={{ color: 'var(--danger)' }}>
           <LogOut size={18} /><span>EXIT</span>

@@ -12,6 +12,14 @@ const LoginPage = () => {
   const [password, setPassword] = useState('1');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isDemoMode, setIsDemoMode] = useState(false);
+
+  React.useEffect(() => {
+    // Detect if we are on Vercel or if the backend is likely missing
+    if (typeof window !== 'undefined' && (window.location.hostname !== 'localhost' || !process.env.NEXT_PUBLIC_API_BASE_URL?.includes('localhost'))) {
+      setIsDemoMode(true);
+    }
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -21,7 +29,7 @@ const LoginPage = () => {
     // Smooth delay for 'Syncing' feel
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    // LOCAL AUTH BRIDGE - Allows login on Vercel without a backend
+    // LOCAL AUTH BRIDGE - Hardcoded for Vercel deployment
     const LOCAL_USERS = {
       '1': { password: '1', role: 'admin', name: 'Master Admin' },
       '2': { password: '2', role: 'user', name: 'Citizen Observer' },
@@ -31,7 +39,7 @@ const LoginPage = () => {
 
     const localUser = LOCAL_USERS[username];
     if (localUser && localUser.password === password) {
-      localStorage.setItem('auth_token', `mock-jwt-${localUser.role}`);
+      localStorage.setItem('auth_token', `nexus-token-${localUser.role}`);
       localStorage.setItem('user_role', localUser.role);
       localStorage.setItem('user_name', localUser.name);
       
@@ -44,23 +52,7 @@ const LoginPage = () => {
       return;
     }
 
-    // FALLBACK TO BACKEND (if running locally)
-    try {
-      const res = await axios.post(`/api/login`, { username, password });
-      if (res.data.success) {
-        localStorage.setItem('auth_token', res.data.token);
-        localStorage.setItem('user_role', res.data.user.role);
-        localStorage.setItem('user_name', res.data.user.name);
-        
-        if (res.data.user.role === 'admin') {
-          router.push('/admin');
-        } else {
-          router.push('/user');
-        }
-      }
-    } catch (err) {
-      setError('Authorization failed. Check credentials.');
-    }
+    setError('ACCESS_DENIED: Invalid Credentials');
     setIsLoading(false);
   };
 
@@ -130,6 +122,11 @@ const LoginPage = () => {
             <p style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', letterSpacing: '1.5px' }}>
               NEXUS TWIN SECURE GATEWAY
             </p>
+            {isDemoMode && (
+              <div style={{ marginTop: '1rem', padding: '0.5rem', background: 'rgba(37,99,235,0.05)', borderRadius: '6px', border: '1px solid rgba(37,99,235,0.1)' }}>
+                <p style={{ fontSize: '0.6rem', fontWeight: 800, color: '#2563eb', margin: 0 }}>📡 DEMO_MODE: USE BYPASS CREDENTIALS</p>
+              </div>
+            )}
           </div>
 
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>

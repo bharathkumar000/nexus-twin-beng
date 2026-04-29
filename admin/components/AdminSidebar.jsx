@@ -56,6 +56,7 @@ const AdminSidebar = ({
   customHeight,
   setCustomHeight,
   transportStep,
+  setTransportStep,
   aiPolicyReport,
   handleDownloadReport,
   citizenComplaints = [],
@@ -193,7 +194,7 @@ const AdminSidebar = ({
                                 color: '#fff', 
                                 background: req.status === 'resolved' ? '#10b981' : '#f59e0b',
                                 letterSpacing: '0.5px'
-                              }}>{req.status.toUpperCase()}</span>
+                              }}>{(req.status || 'PENDING').toUpperCase()}</span>
                             </td>
                             <td style={{ padding: '0.55rem 0.6rem', textAlign: 'center', fontSize: '0.55rem', color: 'var(--text-secondary)' }}>{req.location || 'Bengaluru'}</td>
                             <td style={{ padding: '0.55rem 0.6rem', textAlign: 'right' }}>
@@ -355,22 +356,47 @@ const AdminSidebar = ({
                         <span style={{ fontSize: '0.5rem', color: 'var(--text-secondary)' }}>100m</span>
                       </div>
                     </div>
-                    <button 
-                      onClick={() => setTransportStep(0)}
-                      style={{ 
-                        width: '100%',
-                        background: transportStep === 0 ? 'rgba(37, 99, 235, 0.1)' : 'rgba(16, 185, 129, 0.1)', 
-                        padding: '0.75rem', 
-                        borderRadius: '8px', 
-                        border: `1px solid ${transportStep === 0 ? 'var(--accent)' : '#10b981'}`,
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                       <p style={{ fontSize: '0.55rem', color: transportStep === 0 ? 'var(--accent)' : '#10b981', fontWeight: 900, textAlign: 'center', margin: 0, letterSpacing: '1px' }}>
-                         {transportStep === 0 ? '👉 CLICK MAP TO SET START' : '🎯 CLICK MAP TO SET END'}
-                       </p>
-                    </button>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button 
+                        onClick={() => setTransportStep(0)}
+                        style={{ 
+                          flex: 1,
+                          background: transportStep === 0 ? 'rgba(37, 99, 235, 0.1)' : 'rgba(255, 255, 255, 0.05)', 
+                          padding: '0.75rem', 
+                          borderRadius: '8px', 
+                          border: `1px solid ${transportStep === 0 ? 'var(--accent)' : 'var(--glass-border)'}`,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          color: transportStep === 0 ? 'var(--accent)' : 'var(--text-secondary)',
+                          fontSize: '0.55rem',
+                          fontWeight: 900
+                        }}
+                      >
+                        SET START
+                      </button>
+                      <button 
+                        onClick={() => setTransportStep(1)}
+                        style={{ 
+                          flex: 1,
+                          background: transportStep === 1 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255, 255, 255, 0.05)', 
+                          padding: '0.75rem', 
+                          borderRadius: '8px', 
+                          border: `1px solid ${transportStep === 1 ? '#10b981' : 'var(--glass-border)'}`,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          color: transportStep === 1 ? '#10b981' : 'var(--text-secondary)',
+                          fontSize: '0.55rem',
+                          fontWeight: 900
+                        }}
+                      >
+                        SET END
+                      </button>
+                    </div>
+                    <div style={{ marginTop: '0.75rem', textAlign: 'center' }}>
+                      <p style={{ fontSize: '0.5rem', color: 'var(--accent)', fontWeight: 800, margin: 0, opacity: 0.8 }}>
+                        {transportStep === 0 ? '👇 CLICK ON MAP TO SET ORIGIN' : '🎯 CLICK ON MAP TO SET DESTINATION'}
+                      </p>
+                    </div>
                   </div>
                 )}
                 
@@ -637,57 +663,15 @@ const AdminSidebar = ({
                             textTransform: 'uppercase'
                           }}
                         >
-                          <option value="Months">MONTHS</option>
                           <option value="Years">YEARS</option>
+                          <option value="Months">MONTHS</option>
                           <option value="Days">DAYS</option>
                         </select>
                       </div>
                     </div>
                   </div>
 
-                  {/* IMPACT PROJECTIONS */}
-                  <div className="widget" style={{ padding: '0.75rem', background: 'rgba(37,99,235,0.04)', border: '1px solid rgba(37,99,235,0.15)', marginBottom: '1rem' }}>
-                    <span className="section-label" style={{ fontSize: '0.55rem', color: 'var(--accent)', marginBottom: '0.5rem', display: 'block' }}>IMPACT_PROJECTIONS</span>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      <div>
-                        <label style={{ fontSize: '0.5rem', fontWeight: 800, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.15rem' }}>TRAFFIC DISRUPTION</label>
-                        <input className="search-field" placeholder="e.g., 30% increase for 6 months" value={policyForm.impactTraffic} onChange={e => setPolicyForm({...policyForm, impactTraffic: e.target.value})} style={{ width: '100%' }} />
-                      </div>
-                      <div>
-                        <label style={{ fontSize: '0.5rem', fontWeight: 800, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.15rem' }}>UNDERGROUND UTILITIES RISK</label>
-                        <input className="search-field" placeholder="e.g., Water main rerouting needed" value={policyForm.impactUnderground} onChange={e => setPolicyForm({...policyForm, impactUnderground: e.target.value})} style={{ width: '100%' }} />
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* EXPECTED OUTCOME */}
-                  <div style={{ marginBottom: '1.25rem' }}>
-                    <label style={{ fontSize: '0.55rem', fontWeight: 900, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>EXPECTED_OUTCOME & ROI</label>
-                    <textarea className="search-field" placeholder="Describe projected benefits..." value={policyForm.outcome} onChange={e => setPolicyForm({...policyForm, outcome: e.target.value})} style={{ minHeight: '60px', resize: 'vertical', width: '100%' }} />
-                  </div>
-
-                  {/* ANALYZE BUTTON */}
-                  <div style={{ marginBottom: '1.25rem' }}>
-                    <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.5rem' }}>QUICK_TEMPLATES</label>
-                    <select 
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        if (val === 'roadblock') {
-                          setPolicyForm({ ...policyForm, title: 'ROAD_BLOCK_ALERT: MG Road Construction', location: 'MG Road', outcome: 'Total road block for Metro Phase 3 Pillar installation. Please use Trinity Circle reroute.', duration: 'TODAY (09:00 - 21:00)' });
-                        } else if (val === 'school') {
-                          setPolicyForm({ ...policyForm, title: 'INAUGURATION: New Government School', location: 'Malleshwaram', outcome: 'State-of-the-art educational facility opening for local residents.', duration: 'OPENING_MONDAY' });
-                        } else if (val === 'park') {
-                          setPolicyForm({ ...policyForm, title: 'NEW_GREEN_SPACE: Cubbon Park Extension', location: 'Central Bengaluru', outcome: '3.5 Acres of new recreational space added to the city green lung.', duration: 'OPEN_NOW' });
-                        }
-                      }}
-                      style={{ width: '100%', padding: '0.75rem', background: 'rgba(0,0,0,0.02)', border: '1px solid var(--glass-border)', borderRadius: '10px', fontSize: '0.7rem' }}
-                    >
-                      <option value="">Select a template...</option>
-                      <option value="roadblock">Road Block Alert</option>
-                      <option value="school">New School Inauguration</option>
-                      <option value="park">New Park/Green Space</option>
-                    </select>
-                  </div>
 
                   <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                     <button className="action-btn" onClick={() => handleAction(handleAnalyzePolicy)} disabled={isAnalyzingPolicy} style={{ flex: 1, background: 'var(--accent)', color: '#fff', fontWeight: 800 }}>
@@ -820,7 +804,7 @@ const AdminSidebar = ({
                       })}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-primary)' }}>{req.type.toUpperCase()}</span>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-primary)' }}>{(req.type || 'UNKNOWN').toUpperCase()}</span>
                         <span style={{ 
                           fontSize: '0.5rem', 
                           padding: '3px 8px', 
@@ -828,7 +812,7 @@ const AdminSidebar = ({
                           background: req.status === 'Resolved' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', 
                           color: req.status === 'Resolved' ? 'var(--success)' : 'var(--danger)',
                           fontWeight: 900
-                        }}>{req.status.toUpperCase()}</span>
+                        }}>{(req.status || 'PENDING').toUpperCase()}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.5rem' }}>
                         <MapPin size={10} color="var(--text-secondary)" />
@@ -855,9 +839,9 @@ const AdminSidebar = ({
                       )}
                       <div style={{ padding: '1rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                          <span style={{ fontSize: '0.7rem', fontWeight: 900, color: 'var(--accent)' }}>{complaint.type.toUpperCase()}</span>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 900, color: 'var(--accent)' }}>{(complaint.type || 'UNKNOWN').toUpperCase()}</span>
                           <span style={{ fontSize: '0.5rem', padding: '2px 6px', borderRadius: '4px', background: complaint.status === 'resolved' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', color: complaint.status === 'resolved' ? 'var(--success)' : 'var(--danger)', fontWeight: 800 }}>
-                            {complaint.status.toUpperCase()}
+                            {(complaint.status || 'PENDING').toUpperCase()}
                           </span>
                         </div>
                         <p style={{ fontSize: '0.65rem', color: 'var(--text-primary)', marginBottom: '0.75rem', lineHeight: 1.4 }}>{complaint.description}</p>

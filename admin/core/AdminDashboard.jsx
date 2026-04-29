@@ -46,7 +46,7 @@ const AdminDashboard = () => {
   const [aiSuggestion, setAiSuggestion] = useState(null);
   const [advisorLog, setAdvisorLog] = useState([{ role: 'ai', content: 'NEXUS_AI_STANDBY. Awaiting project-specific strategic directives. (Authorized for Urban Planning & Infrastructure Counsel only.)' }]);
   const [advisorQuery, setAdvisorQuery] = useState('');
-  const [policyForm, setPolicyForm] = useState({ title: '', location: '', budget: '', budgetUnit: 'Cr', duration: '', durationUnit: 'Months', impactUnderground: '', impactTraffic: '', outcome: '', lngLat: null });
+  const [policyForm, setPolicyForm] = useState({ title: '', location: '', budget: '', budgetUnit: 'Cr', duration: '', durationUnit: 'Years', impactUnderground: '', impactTraffic: '', outcome: '', lngLat: null });
   const [aiPolicyScore, setAiPolicyScore] = useState(null);
   const [aiPolicyReport, setAiPolicyReport] = useState(null);
   const [isAnalyzingPolicy, setIsAnalyzingPolicy] = useState(false);
@@ -81,14 +81,21 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchComplaints = async () => {
       try {
-        const res = await axios.get('http://localhost:3001/api/complaints');
+        // Try local backend first, then Supabase if possible, otherwise use simulation
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+        const res = await axios.get(`${apiBase}/api/complaints`);
         setCitizenComplaints(res.data);
       } catch (err) { 
         console.warn("Nexus Command Core offline. Using local simulation for complaints.");
-        setCitizenComplaints([
-          { id: 'm1', demand: 'Road Repair Request', status: 'pending', location: 'Malleshwaram', upvotes: 12, timestamp: new Date().toISOString() },
-          { id: 'm2', demand: 'Water Supply Issue', status: 'pending', location: 'Indiranagar', upvotes: 8, timestamp: new Date().toISOString() }
-        ]);
+        let localData = JSON.parse(localStorage.getItem('nexus_demo_complaints') || '[]');
+        if (localData.length === 0) {
+          localData = [
+            { id: 'm1', demand: 'Road Repair Request', type: 'Road Repair Request', status: 'pending', location: 'Malleshwaram', upvotes: 12, timestamp: new Date().toISOString() },
+            { id: 'm2', demand: 'Water Supply Issue', type: 'Water Supply Issue', status: 'pending', location: 'Indiranagar', upvotes: 8, timestamp: new Date().toISOString() }
+          ];
+          localStorage.setItem('nexus_demo_complaints', JSON.stringify(localData));
+        }
+        setCitizenComplaints(localData.sort((a,b) => b.upvotes - a.upvotes));
       }
     };
     fetchComplaints();
@@ -98,11 +105,30 @@ const AdminDashboard = () => {
 
   const handleResolveComplaint = async (id) => {
     try {
-      const res = await axios.post(`http://localhost:3001/api/complaints/${id}/resolve`);
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+      const res = await axios.post(`${apiBase}/api/complaints/${id}/resolve`);
       if (res.data.success) {
         setCitizenComplaints(prev => prev.map(c => c.id === id ? { ...c, status: 'resolved' } : c));
       }
-    } catch (err) { console.error("Resolve failed", err); }
+    } catch (err) {
+      console.warn("Offline resolve. Updating local storage.");
+      const demoComplaints = JSON.parse(localStorage.getItem('nexus_demo_complaints') || '[]');
+      const updated = demoComplaints.map(c => c.id === id ? { ...c, status: 'resolved' } : c);
+      localStorage.setItem('nexus_demo_complaints', JSON.stringify(updated));
+      setCitizenComplaints(updated.sort((a,b) => b.upvotes - a.upvotes));
+
+      const demoNotifs = JSON.parse(localStorage.getItem('nexus_demo_notifications') || '[]');
+      const comp = updated.find(c => c.id === id);
+      demoNotifs.unshift({
+        id: Date.now(),
+        policy_title: `RESOLVED: ${comp ? (comp.type || comp.demand) : 'Grievance'}`,
+        purpose: 'Community grievance marked as resolved by Nexus Administration.',
+        prediction: 'AI_SAFE',
+        duration: 'RESOLVED',
+        timestamp: new Date().toISOString()
+      });
+      localStorage.setItem('nexus_demo_notifications', JSON.stringify(demoNotifs));
+    }
   };
 
   useEffect(() => {
@@ -114,7 +140,7 @@ const AdminDashboard = () => {
   });
 
   // GAME ENGINE STATE
-  const [cityStats, setCityStats] = useState({ prosperity: 1250, happiness: 72, population: 45000 });
+  const [cityStats, setCityStats] = useState({ prosperity: 1250, happiness: 72, population: 1678303 });
   const [lastActionImpact, setLastActionImpact] = useState(null);
   const impactTimeout = useRef(null);
 
@@ -259,7 +285,49 @@ const AdminDashboard = () => {
   }, []); // Remove dependencies to keep it perfectly fixed across the land
 
   const utilityLayers = React.useMemo(() => {
-    if (!utilitiesData || !isXrayEnabled) return [];
+    if (!isXrayEnabled) return [];
+    // Procedural Grid Generation (Organic, non-symmetric distribution)
+    const denseGridPipes = [];
+    const subStep = 0.00045; 
+    const range = 45; 
+    const center = [77.5912, 12.9797];
+
+    for (let i = -range; i <= range; i++) {
+        if (Math.random() > 0.7) continue; // Randomly skip some lines for realism
+
+        const jitter = () => (Math.random() - 0.5) * 0.0003;
+        const types = ['WaterPipe', 'GasLine', 'ElectricityLine', 'SewagePipe'];
+        
+        // Horizontal Segments (E-W)
+        for (let j = -3; j < 3; j++) {
+          if (Math.random() > 0.6) continue;
+          denseGridPipes.push({
+              properties: { type: types[Math.floor(Math.random() * types.length)] },
+              geometry: { 
+                coordinates: [
+                  [center[0] + (j * 0.01) + jitter(), center[1] + (i * subStep) + jitter()], 
+                  [center[0] + ((j + 1) * 0.01) + jitter(), center[1] + (i * subStep) + jitter()]
+                ] 
+              }
+          });
+        }
+
+        // Vertical Segments (N-S)
+        for (let j = -3; j < 3; j++) {
+          if (Math.random() > 0.6) continue;
+          denseGridPipes.push({
+              properties: { type: types[Math.floor(Math.random() * types.length)] },
+              geometry: { 
+                coordinates: [
+                  [center[0] + (i * subStep) + jitter(), center[1] + (j * 0.01) + jitter()], 
+                  [center[0] + (i * subStep) + jitter(), center[1] + ((j + 1) * 0.01) + jitter()]
+                ] 
+              }
+          });
+        }
+    }
+
+    const allPipes = [...(utilitiesData?.features || []), ...denseGridPipes];
 
     const typeConfig = {
       'WaterPipe': { color: [37, 99, 235], depth: -6, offset: -0.00003 },
@@ -272,7 +340,7 @@ const AdminDashboard = () => {
       // Glow Layer (Base)
       new PathLayer({
         id: 'utility-pipes-glow',
-        data: utilitiesData.features,
+        data: allPipes,
         getPath: d => d.geometry.coordinates.map(p => {
           const cfg = typeConfig[d.properties.type] || { depth: -5, offset: 0 };
           return [p[0] + cfg.offset, p[1] + cfg.offset, cfg.depth];
@@ -281,22 +349,22 @@ const AdminDashboard = () => {
           const c = (typeConfig[d.properties.type] || { color: [255, 255, 255] }).color;
           return [...c, 80];
         },
-        getWidth: 15,
-        widthMinPixels: 4,
+        getWidth: 12,
+        widthMinPixels: 3,
         blur: 1,
         pickable: false
       }),
       // Core Pipe Layer (Solid)
       new PathLayer({
         id: 'utility-pipes-core',
-        data: utilitiesData.features,
+        data: allPipes,
         getPath: d => d.geometry.coordinates.map(p => {
           const cfg = typeConfig[d.properties.type] || { depth: -5, offset: 0 };
           return [p[0] + cfg.offset, p[1] + cfg.offset, cfg.depth];
         }),
         getColor: d => (typeConfig[d.properties.type] || { color: [255, 255, 255] }).color,
-        getWidth: 4,
-        widthMinPixels: 1.5,
+        getWidth: 3,
+        widthMinPixels: 1,
         pickable: true,
         onHover: ({ object }) => {
           if (object) {
@@ -406,7 +474,8 @@ const AdminDashboard = () => {
     try {
       // Artificial delay for 'Thinking' simulation
       await new Promise(resolve => setTimeout(resolve, 2000));
-      const res = await axios.post('http://localhost:3001/api/policy-advisor', { query: q });
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+      const res = await axios.post(`${apiBase}/api/policy-advisor`, { query: q });
       setAdvisorLog(p => [...p, { role: 'ai', content: res.data.report || res.data }]);
     } catch (err) {
       console.warn("AI Advisor offline. Using local simulation.");
@@ -423,6 +492,7 @@ const AdminDashboard = () => {
 
   const handleAnalyzePolicy = async () => {
     setIsAnalyzingPolicy(true);
+    const completeness = [policyForm.title, policyForm.budget, policyForm.location, policyForm.duration, policyForm.outcome, policyPdfFile].filter(Boolean).length / 6;
     setAiPolicyScore(null);
     
     // 1. If a document is attached, fetch data from it first using Ollama document parser
@@ -430,7 +500,8 @@ const AdminDashboard = () => {
       try {
         const formData = new FormData();
         formData.append('file', policyPdfFile);
-        const res = await axios.post('http://localhost:3001/api/parse-policy-document', formData);
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+        const res = await axios.post(`${apiBase}/api/parse-policy-document`, formData);
         if (res.data) {
           setPolicyForm(prev => ({
             ...prev,
@@ -446,51 +517,54 @@ const AdminDashboard = () => {
       }
     }
 
-    // 2. Artificial delay for simulation effect
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    let score = 75;
     try {
-      const res = await axios.post('http://localhost:3001/api/policy-advisor', { query: `Analyze this urban policy: ${policyForm.title}. Budget: ${policyForm.budget} ${policyForm.budgetUnit}. Outcome: ${policyForm.outcome}` });
-      if (res.data.score) score = res.data.score;
-      else {
-        // Fallback to manual heuristic if server doesn't provide score
+      // 2. Artificial delay for simulation effect
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      let score = 75;
+      try {
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+        const res = await axios.post(`${apiBase}/api/policy-advisor`, { query: `Analyze this urban policy: ${policyForm.title}. Budget: ${policyForm.budget} ${policyForm.budgetUnit}. Outcome: ${policyForm.outcome}` });
+        if (res.data.score) score = res.data.score;
+        else {
+          // Fallback to manual heuristic if server doesn't provide score
+          const base = Math.floor(completeness * 50) + 40;
+          const variance = Math.floor(Math.random() * 10);
+          score = Math.min(99, base + variance);
+        }
+      } catch (err) {
+        console.warn("AI Policy Engine offline. Using local heuristic analysis.");
         const base = Math.floor(completeness * 50) + 40;
         const variance = Math.floor(Math.random() * 10);
         score = Math.min(99, base + variance);
       }
-    } catch (err) {
-      console.warn("AI Policy Engine offline. Using local heuristic analysis.");
-      const base = Math.floor(completeness * 50) + 40;
-      const variance = Math.floor(Math.random() * 10);
-      score = Math.min(99, base + variance);
+      
+      setAiPolicyScore(score);
+      
+      // Generate Detailed Report
+      setAiPolicyReport({
+        score,
+        status: score >= 75 ? 'OPTIMAL' : (score >= 50 ? 'MID' : 'CRITICAL'),
+        breakdown: [
+          { label: 'Documentation Depth', value: policyPdfFile ? '+15%' : '0%', status: policyPdfFile ? 'pass' : 'fail' },
+          { label: 'Fiscal Transparency', value: policyForm.budget ? '+20%' : '0%', status: policyForm.budget ? 'pass' : 'fail' },
+          { label: 'Timeline Realism', value: policyForm.duration ? '+15%' : '0%', status: policyForm.duration ? 'pass' : 'fail' },
+          { label: 'Geospatial Precision', value: policyForm.lngLat ? '+25%' : '0%', status: policyForm.lngLat ? 'pass' : 'fail' }
+        ],
+        reasons: [
+          !policyForm.lngLat && "Missing coordinate anchoring reduces infrastructure accuracy.",
+          !policyForm.budget && "Lack of budget transparency increases implementation risk.",
+          score < 75 && "Impact on local traffic exceeds standard safety thresholds (estimated 32% increase)."
+        ].filter(Boolean),
+        suggestions: [
+          "Shift construction to night shifts (11 PM - 5 AM) to reduce daytime traffic impact by 40%.",
+          "Allocate 5% of budget to 'Citizen Compensation Fund' for local business disruption.",
+          "Add secondary utility inspection to prevent water main accidents in the target zone."
+        ]
+      });
+    } finally {
+      setIsAnalyzingPolicy(false);
     }
-    
-    setAiPolicyScore(score);
-    
-    // Generate Detailed Report
-    setAiPolicyReport({
-      score,
-      status: score >= 75 ? 'OPTIMAL' : (score >= 50 ? 'MID' : 'CRITICAL'),
-      breakdown: [
-        { label: 'Documentation Depth', value: policyPdfFile ? '+15%' : '0%', status: policyPdfFile ? 'pass' : 'fail' },
-        { label: 'Fiscal Transparency', value: policyForm.budget ? '+20%' : '0%', status: policyForm.budget ? 'pass' : 'fail' },
-        { label: 'Timeline Realism', value: policyForm.duration ? '+15%' : '0%', status: policyForm.duration ? 'pass' : 'fail' },
-        { label: 'Geospatial Precision', value: policyForm.lngLat ? '+25%' : '0%', status: policyForm.lngLat ? 'pass' : 'fail' }
-      ],
-      reasons: [
-        !policyForm.lngLat && "Missing coordinate anchoring reduces infrastructure accuracy.",
-        !policyForm.budget && "Lack of budget transparency increases implementation risk.",
-        score < 75 && "Impact on local traffic exceeds standard safety thresholds (estimated 32% increase)."
-      ].filter(Boolean),
-      suggestions: [
-        "Shift construction to night shifts (11 PM - 5 AM) to reduce daytime traffic impact by 40%.",
-        "Allocate 5% of budget to 'Citizen Compensation Fund' for local business disruption.",
-        "Add secondary utility inspection to prevent water main accidents in the target zone."
-      ]
-    });
-    
-    setIsAnalyzingPolicy(false);
   };
   
   const handleDownloadReport = () => {
@@ -522,7 +596,8 @@ ${aiPolicyReport.suggestions.map(s => `- ${s}`).join('\n')}
     setIsBroadcasting(true);
     try {
       // POST notification to server so users can see it
-      await axios.post('http://localhost:3001/api/notifications', {
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+      await axios.post(`${apiBase}/api/notifications`, {
         policy: policyForm.title || 'URBAN POLICY DEPLOYMENT',
         price: policyForm.budget || 'N/A',
         location: policyForm.location || 'Bengaluru Central',
@@ -531,7 +606,19 @@ ${aiPolicyReport.suggestions.map(s => `- ${s}`).join('\n')}
         duration: policyForm.duration || 'TBD'
       });
     } catch (err) {
-      console.warn('Notification POST failed (server may be offline):', err.message);
+      console.warn('Notification POST failed (server may be offline). Using local storage.');
+      const demoNotifs = JSON.parse(localStorage.getItem('nexus_demo_notifications') || '[]');
+      demoNotifs.unshift({
+        id: Date.now(),
+        policy_title: policyForm.title || 'URBAN POLICY DEPLOYMENT',
+        price: policyForm.budget || 'N/A',
+        location: policyForm.location || 'Bengaluru Central',
+        purpose: policyForm.outcome || 'Strategic urban development initiative.',
+        prediction: `AI Viability Score: ${aiPolicyScore}% — SAFE`,
+        duration: policyForm.duration || 'TBD',
+        timestamp: new Date().toISOString()
+      });
+      localStorage.setItem('nexus_demo_notifications', JSON.stringify(demoNotifs));
     }
     await new Promise(resolve => setTimeout(resolve, 1500));
 
@@ -672,12 +759,36 @@ ${aiPolicyReport.suggestions.map(s => `- ${s}`).join('\n')}
                 endLngLat: lngLat, 
                 height: Math.max(customHeight, 5),
                 color: ASSET_TEMPLATES[assetToPlace].color,
-                group: 'Transport' 
+                width: 10,
+                name: ASSET_TEMPLATES[assetToPlace].name
               };
               setPlacedAssets(prev => [...prev, newAsset]);
+              setAssetToPlace(null);
               setTransportStep(0);
               setPlacementStart(null);
-              setAssetToPlace(null);
+              
+              // Calculate Simulation Impacts
+              const template = ASSET_TEMPLATES[newAsset.type];
+              if (template) {
+                const econImpact = template.impacts.economic * 10;
+                const socialImpact = template.impacts.social * 5;
+                
+                setCityStats(prev => ({
+                  ...prev,
+                  prosperity: Math.min(100, prev.prosperity + econImpact),
+                  happiness: Math.min(100, prev.happiness + socialImpact)
+                }));
+
+                // Trigger Impact Report
+                triggerImpactReport({
+                  title: `NEW ${(newAsset.name || 'ASSET').toUpperCase()} COMMISSIONED`,
+                  desc: `High-fidelity connection established. Local accessibility increased.`,
+                  stats: [
+                    { label: 'PROSPERITY', val: `+${econImpact}%`, color: 'var(--success)' },
+                    { label: 'HAPPINESS', val: `+${socialImpact}%`, color: 'var(--success)' }
+                  ]
+                });
+              }
             }
             return;
           }
@@ -795,6 +906,7 @@ ${aiPolicyReport.suggestions.map(s => `- ${s}`).join('\n')}
         customHeight={customHeight}
         setCustomHeight={setCustomHeight}
         transportStep={transportStep}
+        setTransportStep={setTransportStep}
         citizenComplaints={citizenComplaints}
         handleResolveComplaint={handleResolveComplaint}
         isThinking={isThinking}
