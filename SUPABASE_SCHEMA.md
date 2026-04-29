@@ -1,6 +1,6 @@
 # 🏛️ Supabase / PostGIS Schema Setup
 
-Run the following SQL commands in your **Supabase SQL Editor** to initialize the Bengaluru Nexus Digital Twin database.
+Run the following SQL commands in your **Supabase SQL Editor** to initialize the Nexus Twin Digital Twin database.
 
 ## 1. Enable Core Extensions
 This enables spatial functions and identity generation.

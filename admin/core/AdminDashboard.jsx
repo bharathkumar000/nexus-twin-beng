@@ -52,6 +52,7 @@ const AdminDashboard = () => {
   const [isAnalyzingPolicy, setIsAnalyzingPolicy] = useState(false);
   const [activeNotification, setActiveNotification] = useState(null);
   const [isBroadcasting, setIsBroadcasting] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
   const [policyLocationPicking, setPolicyLocationPicking] = useState(false);
   const [policyPdfFile, setPolicyPdfFile] = useState(null);
   const [locationSearchResults, setLocationSearchResults] = useState([]);
@@ -394,6 +395,7 @@ const AdminDashboard = () => {
     const q = advisorQuery; 
     setAdvisorQuery('');
     setAdvisorLog(p => [...p, { role: 'user', content: q }]);
+    setIsThinking(true);
     
     try {
       const res = await axios.post('http://localhost:3001/api/policy-advisor', { query: q });
@@ -401,6 +403,8 @@ const AdminDashboard = () => {
     } catch (err) {
       console.error("Advisor Error:", err);
       setAdvisorLog(p => [...p, { role: 'ai', content: "SYSTEM_ERROR: Command Core link unstable. Please retry." }]);
+    } finally {
+      setIsThinking(false);
     }
   };
 
@@ -479,7 +483,7 @@ const AdminDashboard = () => {
   const handleDownloadReport = () => {
     if (!aiPolicyReport) return;
     const reportText = `
-BENGALURU NEXUS - POLICY VIABILITY REPORT
+Nexus Twin - POLICY VIABILITY REPORT
 ------------------------------------------
 TITLE: ${policyForm.title || 'Untitled Policy'}
 SCORE: ${aiPolicyReport.score}% (${aiPolicyReport.status})
@@ -717,7 +721,7 @@ ${aiPolicyReport.suggestions.map(s => `- ${s}`).join('\n')}
 
       <div className="search-container">
         <div className="search-box">
-          <input className="search-field" placeholder="Search Bengaluru Nexus..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onKeyDown={handleSearch} />
+          <input className="search-field" placeholder="Search Nexus Twin..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onKeyDown={handleSearch} />
         </div>
       </div>
 
@@ -780,6 +784,7 @@ ${aiPolicyReport.suggestions.map(s => `- ${s}`).join('\n')}
         transportStep={transportStep}
         citizenComplaints={citizenComplaints}
         handleResolveComplaint={handleResolveComplaint}
+        isThinking={isThinking}
       />
 
       <AdminDock 

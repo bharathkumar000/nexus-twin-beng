@@ -25,6 +25,8 @@
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.12.0",
     "maplibre-gl": "^5.24.0",
+    "next": "^16.2.4",
+    "@arcgis/core": "^4.32.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   }

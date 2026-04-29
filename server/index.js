@@ -118,7 +118,7 @@ app.get('/api/proximity-search', async (req, res) => {
 app.get('/', (req, res) => {
   res.send(`
     <div style="background: #050505; color: #ffcc00; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif; text-align: center;">
-      <h1 style="letter-spacing: 5px;">BENGALURU NEXUS COMMAND</h1>
+      <h1 style="letter-spacing: 5px;">Nexus Twin COMMAND</h1>
       <p style="color: #fff; margin: 20px 0;">The Command Core is running on Port 3001 (API), but the UI is unified on Port 9000.</p>
       <a href="http://localhost:9000" style="background: #ffcc00; color: #000; padding: 15px 30px; border-radius: 5px; text-decoration: none; font-weight: 800; letter-spacing: 2px;">INITIALIZE HUB PORTAL (PORT 9000)</a>
     </div>
@@ -137,18 +137,21 @@ app.post('/api/policy-advisor', async (req, res) => {
   if (!query) return res.status(400).json({ error: 'No query provided' });
 
   try {
-    // Attempt to call local Ollama API
+    // Attempt to call local Ollama API with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
     const ollamaResponse = await fetch('http://localhost:11434/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'gemma4:e4b',
-        prompt: `You are the "Bengaluru Nexus Strategic Advisor", a high-fidelity AI specialized ONLY in urban planning, infrastructure, and fiscal policy for the Bengaluru Nexus Digital Twin project.
+        prompt: `You are the "Nexus Twin Strategic Advisor", a high-fidelity AI specialized ONLY in urban planning, infrastructure, and fiscal policy for the Nexus Twin Digital Twin project.
         
         STRICT RULES:
         1. ONLY answer questions related to city management, urban planning, Bengaluru infrastructure, traffic, utilities, or policy simulation.
         2. If a user asks anything unrelated (e.g., jokes, recipes, general knowledge not related to city planning, or personal questions), you MUST politely refuse.
-        3. Response: "I am authorized only to provide strategic counsel regarding the Bengaluru Nexus urban infrastructure. Please submit a project-relevant query."
+        3. Response: "I am authorized only to provide strategic counsel regarding the Nexus Twin urban infrastructure. Please submit a project-relevant query."
         4. Keep your tone data-driven, tactical, and professional.
         
         User Query: "${query}"
@@ -159,15 +162,22 @@ app.post('/api/policy-advisor', async (req, res) => {
         3. SOCIAL METRICS
         4. VERDICT`,
         stream: false
-      })
+      }),
+      signal: controller.signal
     });
+
+    clearTimeout(timeoutId);
 
     if (ollamaResponse.ok) {
       const data = await ollamaResponse.json();
       return res.json({ report: data.response });
     }
   } catch (err) {
-    console.warn("Ollama not detected on localhost:11434. Falling back to mock simulation.");
+    if (err.name === 'AbortError') {
+      console.warn("Ollama request timed out. Using fallback.");
+    } else {
+      console.warn("Ollama not detected on localhost:11434. Falling back to mock simulation.");
+    }
   }
 
   // Simulation logic for LLM Analysis (Fallback)
@@ -228,7 +238,7 @@ app.post('/api/parse-policy-document', upload.single('file'), async (req, res) =
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'gemma4:e4b',
-        prompt: `You are the Bengaluru Nexus Document Parser. 
+        prompt: `You are the Nexus Twin Document Parser. 
         Extract the following tactical details from the urban policy text below.
         
         Return ONLY a JSON object with these keys:
@@ -282,7 +292,7 @@ app.post('/api/ai-suggest', async (req, res) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'gemma4:e4b',
-        prompt: `You are the "Bengaluru Nexus Strategic AI". 
+        prompt: `You are the "Nexus Twin Strategic AI". 
         Current Priority: ${priority.toUpperCase()}
         Current City Assets: ${JSON.stringify(assets)}
         
@@ -372,6 +382,26 @@ app.post('/api/sentiment', (req, res) => {
 let notifications = [
   {
     id: 1,
+    policy: "ROAD_BLOCK_ALERT: MG Road Construction",
+    price: "N/A",
+    location: "MG Road - Brigade Road Junction",
+    purpose: "Total road block for Metro Phase 3 Pillar installation. Please use Trinity Circle reroute.",
+    prediction: "TRAFFIC_DELAY: 45 Mins",
+    duration: "TODAY (09:00 - 21:00)",
+    timestamp: new Date().toISOString()
+  },
+  {
+    id: 2,
+    policy: "INAUGURATION: Nexus Healthcare Centre",
+    price: "₹120 Crores",
+    location: "Koramangala 4th Block",
+    purpose: "State-of-the-art diagnostic facility opening for all citizens. 24/7 Trauma care integrated.",
+    prediction: "LIFESPAN_IMPACT: +2.5 Yrs",
+    duration: "OPENING_TODAY",
+    timestamp: new Date().toISOString()
+  },
+  {
+    id: 3,
     policy: "Monsoon Resilience Phase 1",
     price: "₹85 Crores",
     location: "NMIT Sector / North Bengaluru",
@@ -498,7 +528,7 @@ app.post('/api/complaints/:id/resolve', async (req, res) => {
       policy_title: `RESOLVED: ${complaint.demand}`,
       price: 'N/A',
       location: complaint.source,
-      purpose: `The reported issue has been successfully addressed by the Bengaluru Nexus Command.`,
+      purpose: `The reported issue has been successfully addressed by the Nexus Twin Command.`,
       prediction: 'VITALITY_GAIN: +5%',
       duration: 'COMPLETED'
     }]);
@@ -511,7 +541,7 @@ app.post('/api/complaints/:id/resolve', async (req, res) => {
 });
 
 // Catch-all for missing API routes to help debug 404s
-app.use('/api/*', (req, res) => {
+app.use('/api', (req, res) => {
   console.warn(`[404_DETECTION] Missing API Endpoint: ${req.method} ${req.originalUrl}`);
   res.status(404).json({ error: `Endpoint ${req.originalUrl} not found on Command Core.` });
 });

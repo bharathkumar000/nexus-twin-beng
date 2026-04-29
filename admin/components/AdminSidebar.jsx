@@ -59,9 +59,17 @@ const AdminSidebar = ({
   aiPolicyReport,
   handleDownloadReport,
   citizenComplaints = [],
-  handleResolveComplaint = () => {}
+  handleResolveComplaint = () => {},
+  isThinking = false
 }) => {
   const [isMaximized, setIsMaximized] = React.useState(false);
+  const chatScrollRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+    }
+  }, [advisorLog, isThinking]);
 
   const handleAction = (callback) => {
     if (callback) callback();
@@ -216,15 +224,27 @@ const AdminSidebar = ({
                 <span className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}>
                   <Bot size={14} /> NEXUS AI ADVISOR (GEMMA-4)
                 </span>
-                <div className="advisor-chat" style={{ height: '220px', overflowY: 'auto', marginBottom: '1rem', marginTop: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.02)', borderRadius: '12px', border: '1px solid var(--glass-border)', fontSize: '0.7rem' }}>
-                  {advisorLog.length === 0 && <p style={{ opacity: 0.5, fontStyle: 'italic' }}>Standing by for strategic queries...</p>}
+                <div className="advisor-chat" ref={chatScrollRef} style={{ height: '260px', overflowY: 'auto', marginBottom: '1.25rem', marginTop: '1rem', padding: '1.25rem', background: 'rgba(0,0,0,0.03)', borderRadius: '16px', border: '1px solid var(--glass-border)', fontSize: '0.7rem', scrollBehavior: 'smooth' }}>
+                  {advisorLog.length === 0 && <p style={{ opacity: 0.5, fontStyle: 'italic', textAlign: 'center', marginTop: '4rem' }}>Standing by for strategic queries...</p>}
                   {advisorLog.map((m, i) => (
-                    <div key={i} style={{ marginBottom: '1rem', padding: '0.75rem', borderRadius: '10px', background: m.role === 'ai' || m.role === 'assistant' ? 'rgba(37,99,235,0.05)' : 'rgba(0,0,0,0.03)', border: m.role === 'ai' || m.role === 'assistant' ? '1px solid var(--accent-glass)' : '1px solid var(--glass-border)' }}>
-                      <strong style={{ color: m.role === 'ai' || m.role === 'assistant' ? 'var(--accent)' : 'var(--text-secondary)', fontSize: '0.6rem', display: 'block', marginBottom: '0.25rem' }}>{m.role === 'ai' || m.role === 'assistant' ? 'NEXUS_OS' : 'COMMANDER'}:</strong>
-                      <p style={{ color: 'var(--text-primary)', lineHeight: '1.4' }}>{m.content}</p>
+                    <div key={i} style={{ marginBottom: '1.25rem', padding: '0.85rem', borderRadius: '12px', background: m.role === 'ai' || m.role === 'assistant' ? 'rgba(37,99,235,0.08)' : 'rgba(255,255,255,0.8)', border: m.role === 'ai' || m.role === 'assistant' ? '1px solid rgba(37,99,235,0.2)' : '1px solid var(--glass-border)', alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '90%', marginLeft: m.role === 'user' ? 'auto' : '0' }}>
+                      <strong style={{ color: m.role === 'ai' || m.role === 'assistant' ? 'var(--accent)' : 'var(--text-secondary)', fontSize: '0.55rem', display: 'block', marginBottom: '0.35rem', fontWeight: 900, letterSpacing: '0.5px' }}>{m.role === 'ai' || m.role === 'assistant' ? 'NEXUS_OS' : 'COMMANDER'}:</strong>
+                      <div style={{ color: 'var(--text-primary)', lineHeight: '1.5', fontSize: '0.65rem' }}>
+                        {m.content.split('\n').map((line, idx) => (
+                          <React.Fragment key={idx}>
+                            {line}
+                            <br />
+                          </React.Fragment>
+                        ))}
+                      </div>
                     </div>
                   ))}
-                  {isBroadcasting && <div className="loading-indicator" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.6rem', color: 'var(--accent)' }}><Loader2 size={12} className="spin" /> ANALYZING GEOSPATIAL IMPACT...</div>}
+                  {isThinking && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.6rem', color: 'var(--accent)', padding: '0.5rem', background: 'rgba(37,99,235,0.05)', borderRadius: '8px', border: '1px solid rgba(37,99,235,0.1)' }}>
+                      <Loader2 size={14} className="spin" /> 
+                      <span style={{ fontWeight: 800, letterSpacing: '1px' }}>NEXUS_AI IS THINKING...</span>
+                    </div>
+                  )}
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <input className="chat-field" value={advisorQuery} onChange={e => setAdvisorQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAskAdvisor()} placeholder="QUERY SYSTEM..." style={{ flex: 1, padding: '0.75rem', background: 'rgba(0,0,0,0.03)', borderRadius: '10px', fontSize: '0.7rem', color: 'var(--text-primary)', border: '1px solid var(--glass-border)' }} />
@@ -543,13 +563,24 @@ const AdminSidebar = ({
                           placeholder="0.00" 
                           value={policyForm.budget} 
                           onChange={e => setPolicyForm({...policyForm, budget: e.target.value})} 
-                          style={{ flex: 1, minWidth: 0 }} 
+                          style={{ flex: 1, minWidth: 0, fontSize: '1rem', fontWeight: 700 }} 
                         />
                         <select 
                           className="search-field"
                           value={policyForm.budgetUnit}
                           onChange={e => setPolicyForm({...policyForm, budgetUnit: e.target.value})}
-                          style={{ width: '65px', padding: '0 4px', fontSize: '0.65rem', fontWeight: 900, background: 'rgba(255,255,255,0.8)' }}
+                          style={{ 
+                            width: '65px', 
+                            padding: '0 4px', 
+                            fontSize: '0.7rem', 
+                            fontWeight: 900, 
+                            background: 'transparent', 
+                            border: 'none', 
+                            borderBottom: '1px solid var(--glass-border)',
+                            color: 'var(--text-primary)',
+                            cursor: 'pointer',
+                            textTransform: 'uppercase'
+                          }}
                         >
                           <option value="Cr">CR</option>
                           <option value="Lakh">LAKH</option>
@@ -558,24 +589,35 @@ const AdminSidebar = ({
                     </div>
                     <div>
                       <label style={{ fontSize: '0.55rem', fontWeight: 900, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>TIMELINE</label>
-                      <div style={{ display: 'flex', gap: '4px' }}>
+                      <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-end' }}>
                         <input 
                           type="number"
                           className="search-field" 
                           placeholder="0" 
                           value={policyForm.duration} 
                           onChange={e => setPolicyForm({...policyForm, duration: e.target.value})} 
-                          style={{ flex: 1, minWidth: 0 }} 
+                          style={{ flex: 1, minWidth: 0, fontSize: '1rem', fontWeight: 700 }} 
                         />
                         <select 
                           className="search-field"
                           value={policyForm.durationUnit || 'Months'}
                           onChange={e => setPolicyForm({...policyForm, durationUnit: e.target.value})}
-                          style={{ width: '85px', padding: '0 4px', fontSize: '0.65rem', fontWeight: 900, background: 'rgba(255,255,255,0.8)' }}
+                          style={{ 
+                            width: '75px', 
+                            padding: '0 4px', 
+                            fontSize: '0.7rem', 
+                            fontWeight: 900, 
+                            background: 'transparent', 
+                            border: 'none', 
+                            borderBottom: '1px solid var(--glass-border)',
+                            color: 'var(--text-primary)',
+                            cursor: 'pointer',
+                            textTransform: 'uppercase'
+                          }}
                         >
-                          <option value="Days">DAYS</option>
                           <option value="Months">MONTHS</option>
                           <option value="Years">YEARS</option>
+                          <option value="Days">DAYS</option>
                         </select>
                       </div>
                     </div>
@@ -603,8 +645,30 @@ const AdminSidebar = ({
                   </div>
 
                   {/* ANALYZE BUTTON */}
-                  <div style={{ marginBottom: '1.5rem' }}>
-                    <button className="action-btn" onClick={() => handleAction(handleAnalyzePolicy)} disabled={isAnalyzingPolicy} style={{ width: '100%', background: 'var(--accent)', color: '#fff', fontWeight: 800 }}>
+                  <div style={{ marginBottom: '1.25rem' }}>
+                    <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.5rem' }}>QUICK_TEMPLATES</label>
+                    <select 
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === 'roadblock') {
+                          setPolicyForm({ ...policyForm, title: 'ROAD_BLOCK_ALERT: MG Road Construction', location: 'MG Road', outcome: 'Total road block for Metro Phase 3 Pillar installation. Please use Trinity Circle reroute.', duration: 'TODAY (09:00 - 21:00)' });
+                        } else if (val === 'school') {
+                          setPolicyForm({ ...policyForm, title: 'INAUGURATION: New Government School', location: 'Malleshwaram', outcome: 'State-of-the-art educational facility opening for local residents.', duration: 'OPENING_MONDAY' });
+                        } else if (val === 'park') {
+                          setPolicyForm({ ...policyForm, title: 'NEW_GREEN_SPACE: Cubbon Park Extension', location: 'Central Bengaluru', outcome: '3.5 Acres of new recreational space added to the city green lung.', duration: 'OPEN_NOW' });
+                        }
+                      }}
+                      style={{ width: '100%', padding: '0.75rem', background: 'rgba(0,0,0,0.02)', border: '1px solid var(--glass-border)', borderRadius: '10px', fontSize: '0.7rem' }}
+                    >
+                      <option value="">Select a template...</option>
+                      <option value="roadblock">Road Block Alert</option>
+                      <option value="school">New School Inauguration</option>
+                      <option value="park">New Park/Green Space</option>
+                    </select>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                    <button className="action-btn" onClick={() => handleAction(handleAnalyzePolicy)} disabled={isAnalyzingPolicy} style={{ flex: 1, background: 'var(--accent)', color: '#fff', fontWeight: 800 }}>
                       {isAnalyzingPolicy ? <><Loader2 className="spin" size={16} /> ANALYZING...</> : '🧠 ANALYZE POLICY (GEMMA_AI)'}
                     </button>
                   </div>

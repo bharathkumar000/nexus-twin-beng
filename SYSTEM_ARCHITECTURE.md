@@ -1,7 +1,7 @@
-# 🏗️ Bengaluru Nexus: System Architecture v5.0
+# 🏗️ Nexus Twin: System Architecture v5.0
 
 ## 🌌 High-Level Overview
-Bengaluru Nexus is a domain-driven, monorepo-style application designed for high-concurrency urban simulation and spatial governance. The architecture is split into three primary layers: **Command Core (Backend)**, **Synthesis Portal (Frontend)**, and **Nexus Storage (Supabase/PostGIS)**.
+Nexus Twin is a domain-driven, monorepo-style application designed for high-concurrency urban simulation and spatial governance. The architecture is split into three primary layers: **Command Core (Backend)**, **Synthesis Portal (Frontend)**, and **Nexus Storage (Supabase/PostGIS)**.
 
 ---
 
@@ -61,4 +61,4 @@ root/
 - **Shared-First Architecture**: All map rendering and agent physics are centralized in `shared/`, ensuring the Admin and User dashboards see the exact same city state.
 
 ---
-**BENGALURU NEXUS CMD v5.0** | *Urban Governance Reimagined.*
+**Nexus Twin CMD v5.0** | *Urban Governance Reimagined.*

@@ -1,9 +1,9 @@
-# 🏙️ Bengaluru Nexus: 3D Digital Twin Command Center v6.0
+# 🏙️ Nexus Twin: 3D Digital Twin Command Center v6.0
 
 ![Banner](./assets/banner.png)
 
 ## 📡 PROJECT OVERVIEW
-**Bengaluru Nexus** is a professional-grade urban simulation and spatial governance platform. Designed as a high-fidelity "Cyber-SOC" interface for Bengaluru, it synthesizes real-world geospatial data, 3D architectural footprints, and critical utility infrastructure into a unified digital twin.
+**Nexus Twin** is a professional-grade urban simulation and spatial governance platform. Designed as a high-fidelity "Cyber-SOC" interface for Bengaluru, it synthesizes real-world geospatial data, 3D architectural footprints, and critical utility infrastructure into a unified digital twin.
 
 Built for urban planners and policy makers, the platform leverages **Supabase + PostGIS** for managed spatial storage and **Next.js 16** for high-performance city-wide visualization.
 
@@ -83,4 +83,4 @@ npm run dev
 
 ---
 
-> *"The future of urban governance is not in papers, but in pixels."* - **BENGALURU NEXUS CMD v6.0**
+> *"The future of urban governance is not in papers, but in pixels."* - **Nexus Twin CMD v6.0**

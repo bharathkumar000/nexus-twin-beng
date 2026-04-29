@@ -127,7 +127,7 @@ const UserDashboard = () => {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       if (res.data.success) {
-        alert("COMPLAINT_FILED: Bengaluru Nexus Command notified.");
+        alert("COMPLAINT_FILED: Nexus Twin Command notified.");
         return true;
       }
     } catch (err) {

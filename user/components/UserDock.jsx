@@ -1,28 +1,9 @@
 import React from 'react';
 import { Globe, Leaf, ShieldAlert, History, Layers, LogOut } from 'lucide-react';
 
-const UserDock = ({ activeTab, setActiveTab, currentStyle, setCurrentStyle, handleLogout, setIsSidebarCollapsed }) => {
-  const tabs = [
-    { id: 'social', icon: Globe, label: 'Mood' },
-    { id: 'eco', icon: Leaf, label: 'Eco' },
-    { id: 'crisis', icon: ShieldAlert, label: 'Public Safety' },
-    { id: 'heritage', icon: History, label: 'Legacy' }
-  ];
-
+const UserDock = ({ currentStyle, setCurrentStyle, handleLogout }) => {
   return (
     <div className="bottom-dock">
-      <div className="dock-section">
-        {tabs.map(t => (
-          <button key={t.id} className={`dock-btn ${activeTab === t.id ? 'active' : ''}`} onClick={() => {
-            setActiveTab(t.id);
-            setIsSidebarCollapsed(false);
-          }}>
-            <t.icon size={18} />
-            <span>{t.label}</span>
-          </button>
-        ))}
-      </div>
-      
       <div className="dock-section">
         <button className="dock-btn" onClick={() => {
             const styles = ['satellite', 'hybrid', 'streets'];
