@@ -28,6 +28,5 @@ export const CATEGORIES = {
   directives: { label: 'DIRECTIVES', icon: Bot },
   builder: { label: 'BUILDER', icon: Hammer },
   policy: { label: 'POLICY', icon: FileText },
-  social: { label: 'SOCIAL', icon: Globe },
-  reports: { label: 'REPORTS', icon: MessageSquare }
+  social: { label: 'SOCIAL & REPORTS', icon: Globe }
 };

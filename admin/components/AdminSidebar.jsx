@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   ShieldAlert, Activity, Bot, Hammer, Globe, MessageSquare, 
-  History, Target, Send, Megaphone, Loader2, Terminal, X, Heart, MapPin, Trash2, Maximize2, Minimize2
+  History, Target, Send, Megaphone, Loader2, Terminal, X, Heart, MapPin, Trash2, Maximize2, Minimize2, FileText, UploadCloud, Paperclip
 } from 'lucide-react';
 import { ASSET_TEMPLATES } from '../utils/constants';
 
@@ -41,7 +41,10 @@ const AdminSidebar = ({
   setIsSidebarCollapsed,
   isDemolishMode,
   setIsDemolishMode,
-  sentimentData
+  sentimentData,
+  aiPolicyScore,
+  isAnalyzingPolicy,
+  handleAnalyzePolicy
 }) => {
   const [isMaximized, setIsMaximized] = React.useState(false);
 
@@ -412,7 +415,7 @@ const AdminSidebar = ({
 
           {activeCategory === 'social' && (
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-              <div className="panel-section">
+              <div className="panel-section" style={{ marginBottom: '2rem' }}>
                 <span className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}>
                   <Heart size={14} /> CITIZEN SENTIMENT PULSE
                 </span>
@@ -453,11 +456,7 @@ const AdminSidebar = ({
                   </div>
                 )}
               </div>
-            </motion.div>
-          )}
 
-          {activeCategory === 'reports' && (
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
               <div className="panel-section">
                 <span className="section-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}>
                   <MessageSquare size={14} /> PUBLIC_REQUEST_INBOX

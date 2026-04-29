@@ -70,12 +70,12 @@ const MapLayout = ({
     wireframe: true,
     filled: true,
     getElevation: d => d.properties.height || 15,
-    getFillColor: [70, 80, 95, 200], // Dark slate base color
-    getLineColor: [37, 99, 235, 100],
+    getFillColor: [255, 255, 255, 255],
+    getLineColor: [200, 210, 220, 150],
     lineWidthMinPixels: 1,
     pickable: true,
     autoHighlight: true,
-    highlightColor: [255, 255, 255, 255], // White highlight on hover/select
+    highlightColor: [37, 99, 235, 200],
     opacity: 1,
     material: {
       ambient: 1.0,
