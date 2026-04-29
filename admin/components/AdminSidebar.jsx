@@ -240,10 +240,26 @@ const AdminSidebar = ({
                     </div>
                   ))}
                   {isThinking && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '0.6rem', color: 'var(--accent)', padding: '0.5rem', background: 'rgba(37,99,235,0.05)', borderRadius: '8px', border: '1px solid rgba(37,99,235,0.1)' }}>
-                      <Loader2 size={14} className="spin" /> 
-                      <span style={{ fontWeight: 800, letterSpacing: '1px' }}>NEXUS_AI IS THINKING...</span>
-                    </div>
+                    <motion.div 
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        gap: '0.75rem', 
+                        fontSize: '0.65rem', 
+                        color: 'var(--accent)', 
+                        padding: '1rem', 
+                        background: 'rgba(37,99,235,0.08)', 
+                        borderRadius: '12px', 
+                        border: '1px solid rgba(37,99,235,0.2)',
+                        margin: '1rem 0'
+                      }}
+                    >
+                      <Loader2 size={16} className="spin" /> 
+                      <span style={{ fontWeight: 800, letterSpacing: '1.5px', textTransform: 'uppercase' }}>Nexus_AI is Processing...</span>
+                    </motion.div>
                   )}
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>

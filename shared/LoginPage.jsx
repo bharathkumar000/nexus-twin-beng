@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ShieldAlert, User, Lock, Loader2, Zap, ShieldCheck, Fingerprint } from 'lucide-react';
+import { ShieldAlert, User, Lock, Loader2, Zap, ShieldCheck, Fingerprint, Activity, Globe, MessageSquare } from 'lucide-react';
 import axios from 'axios';
 import { useRouter, useParams } from 'next/navigation';
 
@@ -17,13 +17,23 @@ const LoginPage = () => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    
+    // Smooth delay for 'Syncing' feel
+    await new Promise(resolve => setTimeout(resolve, 800));
+
     try {
       const res = await axios.post(`/api/login`, { username, password });
       if (res.data.success) {
         localStorage.setItem('auth_token', res.data.token);
         localStorage.setItem('user_role', res.data.user.role);
         localStorage.setItem('user_name', res.data.user.name);
-        router.push('/');
+        
+        // Dynamic Redirection based on role
+        if (res.data.user.role === 'admin') {
+          router.push('/admin');
+        } else {
+          router.push('/user');
+        }
       }
     } catch (err) {
       setError('Authorization failed. Check credentials.');
@@ -59,49 +69,49 @@ const LoginPage = () => {
           flexDirection: 'column',
           justifyContent: 'center'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '3rem' }}>
-            <div style={{ padding: '0.5rem', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
-              {isAdmin ? <ShieldAlert size={20} /> : <User size={20} />}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '3.5rem' }}>
+            <div style={{ padding: '0.65rem', background: 'rgba(255,255,255,0.1)', borderRadius: '10px' }}>
+              {isAdmin ? <ShieldAlert size={28} /> : <User size={28} />}
             </div>
-            <span style={{ fontSize: '1rem', fontWeight: 800, letterSpacing: '1px' }}>NEXUS TWIN</span>
+            <span style={{ fontSize: '1.5rem', fontWeight: 900, letterSpacing: '2px' }}>NEXUS TWIN</span>
           </div>
 
-          <h2 style={{ fontSize: '2.5rem', fontWeight: 900, lineHeight: 1.1, marginBottom: '1rem' }}>SYSTEM SYNC</h2>
-          <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)', lineHeight: 1.5, marginBottom: '3rem' }}>
-            Establish node presence in the NEXUS layers.
+          <h2 style={{ fontSize: '3rem', fontWeight: 900, lineHeight: 1, marginBottom: '1.25rem' }}>URBAN COMMAND</h2>
+          <p style={{ fontSize: '1.1rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5, marginBottom: '4rem' }}>
+            Access the Bengaluru Digital Twin command core and simulation layers.
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{ padding: '0.5rem', background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }}><Zap size={16} /></div>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '1px' }}>INSTANT VALIDATION</span>
+              <div style={{ padding: '0.5rem', background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }}><Activity size={16} /></div>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '1px' }}>REAL-TIME SIMULATION</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{ padding: '0.5rem', background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }}><ShieldCheck size={16} /></div>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '1px' }}>MILITARY GRADE</span>
+              <div style={{ padding: '0.5rem', background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }}><Globe size={16} /></div>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '1px' }}>GEOSPATIAL ANALYSIS</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{ padding: '0.5rem', background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }}><Fingerprint size={16} /></div>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '1px' }}>BIOMETRIC NODES</span>
+              <div style={{ padding: '0.5rem', background: 'rgba(255,255,255,0.1)', borderRadius: '50%' }}><MessageSquare size={16} /></div>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, letterSpacing: '1px' }}>CITIZEN FEEDBACK LOOP</span>
             </div>
           </div>
         </div>
 
         {/* RIGHT COLUMN - WHITE */}
         <div style={{ flex: 1.2, padding: '4rem 3rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <p style={{ fontSize: '0.65rem', fontWeight: 800, color: '#2563eb', letterSpacing: '2px', marginBottom: '0.5rem' }}>
-              INNOVATORS AND VISIONARIES
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <p style={{ fontSize: '0.8rem', fontWeight: 800, color: '#2563eb', letterSpacing: '3px', marginBottom: '0.75rem' }}>
+              URBAN PLANNERS AND CITIZENS
             </p>
-            <h2 style={{ fontSize: '2rem', fontWeight: 900, color: '#0f172a', marginBottom: '0.5rem' }}>WELCOME</h2>
-            <p style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748b', letterSpacing: '1px' }}>
-              IDENTIFICATION PARAMETERS SYNC
+            <h2 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#0f172a', marginBottom: '0.75rem' }}>WELCOME</h2>
+            <p style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748b', letterSpacing: '1.5px' }}>
+              NEXUS TWIN SECURE GATEWAY
             </p>
           </div>
 
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div>
-              <label style={{ fontSize: '0.65rem', fontWeight: 800, color: '#64748b', marginBottom: '0.5rem', display: 'block' }}>NODE CREDENTIALS</label>
+              <label style={{ fontSize: '0.65rem', fontWeight: 800, color: '#64748b', marginBottom: '0.5rem', display: 'block' }}>AUTHORIZATION ID</label>
               <div style={{ display: 'flex', alignItems: 'center', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0.75rem 1rem' }}>
                 <User size={16} color="#94a3b8" style={{ marginRight: '0.75rem' }} />
                 <input 
@@ -116,7 +126,7 @@ const LoginPage = () => {
             </div>
 
             <div>
-              <label style={{ fontSize: '0.65rem', fontWeight: 800, color: '#64748b', marginBottom: '0.5rem', display: 'block' }}>SECURITY PROTOCOL KEY</label>
+              <label style={{ fontSize: '0.65rem', fontWeight: 800, color: '#64748b', marginBottom: '0.5rem', display: 'block' }}>COMMAND ACCESS KEY</label>
               <div style={{ display: 'flex', alignItems: 'center', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0.75rem 1rem' }}>
                 <Lock size={16} color="#94a3b8" style={{ marginRight: '0.75rem' }} />
                 <input 
@@ -133,17 +143,14 @@ const LoginPage = () => {
             {error && <p style={{ color: '#ef4444', fontSize: '0.75rem', textAlign: 'center', fontWeight: 600 }}>{error}</p>}
 
             <button type="submit" disabled={isLoading} style={{ background: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '1rem', fontSize: '0.85rem', fontWeight: 800, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', transition: 'background 0.2s', marginTop: '0.5rem' }}>
-              {isLoading ? <Loader2 className="spin" size={18} /> : 'ESTABLISH LINK →'}
+              {isLoading ? <Loader2 className="spin" size={18} /> : 'ENTER DASHBOARD →'}
             </button>
           </form>
 
-          <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem' }}>
-            <span style={{ color: '#94a3b8', fontWeight: 600 }}>NEW NODE?</span>
-            <button onClick={() => router.push('/portal')} style={{ background: 'none', border: 'none', color: '#2563eb', fontWeight: 800, cursor: 'pointer' }}>Enroll Node</button>
-          </div>
+
 
           <div style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid #f1f5f9' }}>
-            <p style={{ fontSize: '0.55rem', color: '#94a3b8', fontWeight: 900, marginBottom: '0.75rem', textAlign: 'center', letterSpacing: '1px' }}>TEST AUTHORIZATION BYPASS</p>
+            <p style={{ fontSize: '0.55rem', color: '#94a3b8', fontWeight: 900, marginBottom: '0.75rem', textAlign: 'center', letterSpacing: '1px' }}>SYSTEM AUTHENTICATION BYPASS</p>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
               <div onClick={() => { setUsername('1'); setPassword('1'); }} style={{ cursor: 'pointer', padding: '0.5rem 1rem', background: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
                 <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#ef4444', marginRight: '0.5rem' }}>ADMIN</span>

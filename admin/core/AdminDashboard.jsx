@@ -398,6 +398,8 @@ const AdminDashboard = () => {
     setIsThinking(true);
     
     try {
+      // Artificial delay for 'Thinking' simulation
+      await new Promise(resolve => setTimeout(resolve, 2000));
       const res = await axios.post('http://localhost:3001/api/policy-advisor', { query: q });
       setAdvisorLog(p => [...p, { role: 'ai', content: res.data.report }]);
     } catch (err) {
@@ -628,7 +630,7 @@ ${aiPolicyReport.suggestions.map(s => `- ${s}`).join('\n')}
     setPlacedAssets(prev => [...prev, { id: Date.now(), type, lngLat, ...ASSET_TEMPLATES[type] }]);
   };
 
-  const handleLogout = () => { localStorage.clear(); router.push('/portal'); };
+  const handleLogout = () => { localStorage.removeItem('auth_token'); router.push('/'); };
 
   return (
     <div className="app-root" onDragOver={e => e.preventDefault()} onDrop={onDrop}>
