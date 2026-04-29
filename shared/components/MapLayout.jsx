@@ -38,11 +38,23 @@ const MapLayout = ({
 
     // Darken the background for X-Ray
     if (map.current.getLayer('water')) {
-      map.current.setPaintProperty('water', 'fill-color', isXrayEnabled ? '#0a0b1b' : '#d2e4f0');
+      map.current.setPaintProperty('water', 'fill-color', isXrayEnabled ? '#050505' : '#d2e4f0');
     }
     if (map.current.getLayer('background')) {
-      map.current.setPaintProperty('background', 'background-color', isXrayEnabled ? '#050608' : '#f8f4f0');
+      map.current.setPaintProperty('background', 'background-color', isXrayEnabled ? '#000000' : '#f8f4f0');
     }
+
+    // Toggle X-Ray specific layers
+    ['building-footprints', 'utility-pipes', 'utility-pipes-glow', 'minecraft-grid'].forEach(l => {
+      if (map.current.getLayer(l)) {
+        map.current.setLayoutProperty(l, 'visibility', isXrayEnabled ? 'visible' : 'none');
+      }
+    });
+
+    if (map.current.getLayer('xray-dark-tiles')) {
+      map.current.setLayoutProperty('xray-dark-tiles', 'visibility', isXrayEnabled ? 'visible' : 'none');
+    }
+
   }, [isXrayEnabled, mapLoaded]);
 
   // 2. INITIALIZATION
@@ -64,55 +76,76 @@ const MapLayout = ({
         },
         glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
         layers: [
-          { id: 'background', type: 'background', paint: { 'background-color': '#050505' } },
+          { id: 'background', type: 'background', paint: { 'background-color': '#000000' } },
           { id: 'hybrid-tiles', type: 'raster', source: 'google-hybrid', layout: { visibility: 'visible' } },
           { id: 'satellite-tiles', type: 'raster', source: 'google-satellite', layout: { visibility: 'none' } },
           { id: 'street-tiles', type: 'raster', source: 'google-roads', layout: { visibility: 'none' } },
-          { id: 'xray-dark-tiles', type: 'raster', source: 'dark-blueprint', layout: { visibility: 'none' }, paint: { 'raster-opacity': 0.8 } },
+          { id: 'xray-dark-tiles', type: 'raster', source: 'dark-blueprint', layout: { visibility: 'none' }, paint: { 'raster-opacity': 0.1 } },
           
+          // X-RAY BUILDING FOOTPRINTS (CIRCUIT LOOK)
+          {
+            id: 'building-footprints',
+            type: 'line',
+            source: 'buildings',
+            layout: { visibility: 'none' },
+            paint: {
+              'line-width': ['interpolate', ['linear'], ['zoom'], 13, 0.5, 16, 1.5, 18, 2.5],
+              'line-color': '#facc15',
+              'line-opacity': ['interpolate', ['linear'], ['zoom'], 13, 0.2, 16, 0.8]
+            }
+          },
+
           // MINECRAFT GRID
           {
             id: 'minecraft-grid',
             type: 'fill',
             source: 'grid-source',
+            layout: { visibility: 'none' },
             paint: {
               'fill-color': [
                 'case',
-                ['boolean', ['feature-state', 'selected'], false],
-                'rgba(37, 99, 235, 0.4)',
-                ['boolean', ['get', 'major'], false],
-                'rgba(37, 99, 235, 0.05)',
-                'rgba(255, 255, 255, 0.01)'
+                ['boolean', ['feature-state', 'selected'], false], 'rgba(37, 99, 235, 0.4)',
+                ['boolean', ['get', 'major'], false], 'rgba(255, 255, 255, 0.05)',
+                'rgba(255, 255, 255, 0.02)'
               ],
-              'fill-outline-color': [
-                'case',
-                ['boolean', ['get', 'major'], false],
-                'rgba(37, 99, 235, 0.2)',
-                'rgba(255, 255, 255, 0.05)'
-              ]
+              'fill-outline-color': 'rgba(255, 255, 255, 0.1)'
             }
           },
           
           {
-            id: 'utility-pipes',
-            type: 'line',
-            source: 'utilities',
-            paint: {
-              'line-width': ['interpolate', ['linear'], ['zoom'], 12, 1, 15, 3, 18, 12],
-              'line-color': ['match', ['get', 'type'], 'WaterPipe', '#2563eb', 'SewagePipe', '#facc15', 'GasLine', '#f97316', 'ElectricityLine', '#ffffff', '#ffffff'],
-              'line-opacity': 0,
-              'line-blur': 0.5
-            }
-          },
-          {
             id: 'utility-pipes-glow',
             type: 'line',
             source: 'utilities',
+            layout: { visibility: 'none' },
             paint: {
-              'line-width': ['interpolate', ['linear'], ['zoom'], 12, 4, 18, 20],
-              'line-color': ['match', ['get', 'type'], 'WaterPipe', '#2563eb', 'SewagePipe', '#facc15', 'GasLine', '#f97316', 'ElectricityLine', '#ffffff', '#ffffff'],
-              'line-opacity': 0,
-              'line-blur': 10
+              'line-width': ['interpolate', ['linear'], ['zoom'], 12, 1, 15, 8, 18, 30],
+              'line-color': ['match', ['get', 'type'], 
+                'WaterPipe', '#2563eb', 
+                'SewagePipe', '#facc15', 
+                'GasLine', '#f97316', 
+                'ElectricityLine', '#ffffff', 
+                '#ffffff'
+              ],
+              'line-opacity': ['interpolate', ['linear'], ['zoom'], 12, 0, 14, 0.4],
+              'line-blur': 12
+            }
+          },
+
+          {
+            id: 'utility-pipes',
+            type: 'line',
+            source: 'utilities',
+            layout: { visibility: 'none' },
+            paint: {
+              'line-width': ['interpolate', ['linear'], ['zoom'], 12, 0.5, 15, 2, 18, 6],
+              'line-color': ['match', ['get', 'type'], 
+                'WaterPipe', '#60a5fa', 
+                'SewagePipe', '#fde047', 
+                'GasLine', '#fb923c', 
+                'ElectricityLine', '#ffffff', 
+                '#ffffff'
+              ],
+              'line-opacity': ['interpolate', ['linear'], ['zoom'], 12, 0.2, 14, 1]
             }
           },
           
@@ -223,8 +256,6 @@ const MapLayout = ({
       try { map.current.setFeatureState({ source: 'grid-source', id: prevGridSelectedRef.current }, { selected: false }); } catch(err){}
     }
     if (selectedGridCellId !== null) {
-      // Feature states in MapLibre for GeoJSON require the feature to have a numeric ID or we use promoteId
-      // In gridData, I'll make sure each feature has an id property
       try { map.current.setFeatureState({ source: 'grid-source', id: selectedGridCellId }, { selected: true }); } catch(err){}
     }
     prevGridSelectedRef.current = selectedGridCellId;
@@ -235,21 +266,15 @@ const MapLayout = ({
   useEffect(() => {
     if (!map.current || !map.current.isStyleLoaded()) return;
     
-    // Clear previous selections that are no longer selected
     prevSelectedRef.current.forEach(id => {
       if (!selectedBuildingIds.includes(id)) {
-        try {
-          map.current.setFeatureState({ source: 'buildings', id: id }, { selected: false });
-        } catch (e) { /* ignore */ }
+        try { map.current.setFeatureState({ source: 'buildings', id: id }, { selected: false }); } catch (e) {}
       }
     });
     
-    // Set new selections
     selectedBuildingIds.forEach(id => {
       if (!prevSelectedRef.current.includes(id)) {
-        try {
-          map.current.setFeatureState({ source: 'buildings', id: id }, { selected: true });
-        } catch (e) { /* ignore */ }
+        try { map.current.setFeatureState({ source: 'buildings', id: id }, { selected: true }); } catch (e) {}
       }
     });
     
@@ -268,21 +293,27 @@ const MapLayout = ({
   useEffect(() => {
     if (!map.current) return;
     
-    // Ensure the map is ready before manipulating layers
     const updateVisibility = () => {
       const isSat = currentStyle === 'satellite';
       const isHybrid = currentStyle === 'hybrid';
       const isStreets = currentStyle === 'streets';
-
-      if (map.current.getLayer('satellite-tiles')) map.current.setLayoutProperty('satellite-tiles', 'visibility', (isSat && !isXrayEnabled) ? 'visible' : 'none');
-      if (map.current.getLayer('hybrid-tiles')) map.current.setLayoutProperty('hybrid-tiles', 'visibility', (isHybrid && !isXrayEnabled) ? 'visible' : 'none');
-      if (map.current.getLayer('street-tiles')) map.current.setLayoutProperty('street-tiles', 'visibility', (isStreets && !isXrayEnabled) ? 'visible' : 'none');
-      if (map.current.getLayer('xray-dark-tiles')) {
-        map.current.setLayoutProperty('xray-dark-tiles', 'visibility', isXrayEnabled ? 'visible' : 'none');
-        map.current.setPaintProperty('xray-dark-tiles', 'raster-opacity', isXrayEnabled ? 0.15 : 0.8);
-      }
       
-      // In X-ray mode, buildings become "ghostly" (transparent) to show underground corridors
+      // GROUND LAYER OPACITY: Surface becomes 10% opaque (ghostly) in X-Ray mode
+      const opacity = isXrayEnabled ? 0.1 : 1;
+      
+      if (map.current.getLayer('satellite-tiles')) {
+        map.current.setLayoutProperty('satellite-tiles', 'visibility', isSat ? 'visible' : 'none');
+        map.current.setPaintProperty('satellite-tiles', 'raster-opacity', isSat ? opacity : 0);
+      }
+      if (map.current.getLayer('hybrid-tiles')) {
+        map.current.setLayoutProperty('hybrid-tiles', 'visibility', isHybrid ? 'visible' : 'none');
+        map.current.setPaintProperty('hybrid-tiles', 'raster-opacity', isHybrid ? opacity : 0);
+      }
+      if (map.current.getLayer('street-tiles')) {
+        map.current.setLayoutProperty('street-tiles', 'visibility', isStreets ? 'visible' : 'none');
+        map.current.setPaintProperty('street-tiles', 'raster-opacity', isStreets ? opacity : 0);
+      }
+
       if (map.current.getLayer('3d-buildings')) {
         map.current.setPaintProperty('3d-buildings', 'fill-extrusion-opacity', isXrayEnabled ? 0.05 : 0.88);
       }

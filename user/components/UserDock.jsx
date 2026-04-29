@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layers, LogOut, MessageSquare, Bell } from 'lucide-react';
+import { Layers, LogOut, MessageSquare, Bell, ShieldAlert } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const UserDock = ({ 
@@ -9,7 +9,9 @@ const UserDock = ({
   isSidebarCollapsed, 
   setIsSidebarCollapsed, 
   activeSidebarTab, 
-  setActiveSidebarTab 
+  setActiveSidebarTab,
+  isXrayEnabled,
+  setIsXrayEnabled
 }) => {
   return (
     <div className="bottom-dock">
@@ -46,6 +48,19 @@ const UserDock = ({
             setCurrentStyle(styles[nextIndex]);
           }}>
           <Layers size={18} /><span>{(currentStyle || 'streets').toUpperCase()}</span>
+        </button>
+
+        <button 
+          className={`dock-btn ${isXrayEnabled ? 'active' : ''}`}
+          onClick={() => setIsXrayEnabled(!isXrayEnabled)}
+        >
+          <motion.div
+            animate={isXrayEnabled ? { scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] } : {}}
+            transition={{ duration: 0.3 }}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}
+          >
+            <ShieldAlert size={18} /><span>{isXrayEnabled ? 'SURFACE' : 'X-RAY'}</span>
+          </motion.div>
         </button>
 
         <button className="dock-btn danger" onClick={handleLogout} style={{ color: 'var(--danger)' }}>

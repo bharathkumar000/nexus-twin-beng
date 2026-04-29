@@ -316,8 +316,9 @@ const UserSidebar = ({
           </>
           )}
       </div>
+    </div>
 
-      {/* DETAILED NOTIFICATION OVERLAY (Moved outside scroll-area) */}
+    {/* DETAILED NOTIFICATION OVERLAY (Moved outside scroll-area) */}
       <AnimatePresence>
         {selectedNotif && (
           <motion.div 
