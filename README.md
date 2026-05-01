@@ -3,7 +3,7 @@
 ![Banner](./assets/banner.png)
 
 ## 📡 PROJECT OVERVIEW
-**Nexus Twin** is a professional-grade urban simulation and spatial governance platform. Designed as a high-fidelity "Cyber-SOC" interface for Bengaluru, it synthesizes real-world geospatial data, 3D architectural footprints, and critical utility infrastructure into a unified digital twin.
+**Nexus Twin** is a professional-grade urban simulation and spatial governance platform. Designed as a high-fidelity "Cyber-SOC" interface for Mysuru, it synthesizes real-world geospatial data, 3D architectural footprints, and critical utility infrastructure into a unified digital twin.
 
 Built for urban planners and policy makers, the platform leverages **Supabase + PostGIS** for managed spatial storage and **Next.js 16** for high-performance city-wide visualization.
 
@@ -25,7 +25,7 @@ The project follows a **Domain-Driven Modular** structure, separating the platfo
 ## 🚀 Advanced Command Features (v6.0)
 
 ### **1. 🗺️ CITY-WIDE UNDERGROUND X-RAY**
-- **Unified Infrastructure Mapping**: High-density visualization of over **6,000+ utility features** across the entire Bengaluru map.
+- **Unified Infrastructure Mapping**: High-density visualization of over **6,000+ utility features** across the entire Mysuru map.
 - **Color-Coded Vitale**: Real-time tracking of the Power Grid (White), Water Mains (Blue), Gas Pipelines (Orange), and Sewage Systems (Yellow).
 - **Ground-Locked Precision**: Native MapLibre rendering ensures infrastructure is pinned to the city floor without perspective drift.
 
